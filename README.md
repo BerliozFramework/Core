@@ -1,2 +1,1 @@
-# Core
-Berlioz Framework Core
+# Berlioz Framework Core
