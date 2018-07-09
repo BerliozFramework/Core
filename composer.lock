@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef9bc44fabd0b50d03e8bb7144423a9d",
+    "content-hash": "eab79a0e0c1ffda97876adbd7380de89",
     "packages": [
         {
             "name": "berlioz/config",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Config.git",
-                "reference": "8f245c8b5655c643d4a3b9ca1cc8d0c1f334cdc9"
+                "reference": "bd363221be1ab50aece5f411665bca29c1af01ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/8f245c8b5655c643d4a3b9ca1cc8d0c1f334cdc9",
-                "reference": "8f245c8b5655c643d4a3b9ca1cc8d0c1f334cdc9",
+                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/bd363221be1ab50aece5f411665bca29c1af01ef",
+                "reference": "bd363221be1ab50aece5f411665bca29c1af01ef",
                 "shasum": ""
             },
             "require": {
@@ -45,7 +45,7 @@
             ],
             "description": "Berlioz Configuration",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-05-31 14:28:32"
+            "time": "2018-06-29 21:44:26"
         },
         {
             "name": "berlioz/service-container",
@@ -94,12 +94,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Utils.git",
-                "reference": "817bd41e0770d926c0209f0f68a9d6ed811523f4"
+                "reference": "538db34870e27c75109e44fb55655d7cd2122402"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Utils/zipball/817bd41e0770d926c0209f0f68a9d6ed811523f4",
-                "reference": "817bd41e0770d926c0209f0f68a9d6ed811523f4",
+                "url": "https://api.github.com/repos/BerliozFramework/Utils/zipball/538db34870e27c75109e44fb55655d7cd2122402",
+                "reference": "538db34870e27c75109e44fb55655d7cd2122402",
                 "shasum": ""
             },
             "require": {
@@ -129,7 +129,7 @@
             ],
             "description": "Additional functions for PHP",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-01-30 15:30:59"
+            "time": "2018-07-09 14:47:37"
         },
         {
             "name": "psr/container",
