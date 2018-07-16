@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "eab79a0e0c1ffda97876adbd7380de89",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Config.git",
-                "reference": "bd363221be1ab50aece5f411665bca29c1af01ef"
+                "reference": "9903c5f5db0f94329141a077975fcc492d0584c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/bd363221be1ab50aece5f411665bca29c1af01ef",
-                "reference": "bd363221be1ab50aece5f411665bca29c1af01ef",
+                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/9903c5f5db0f94329141a077975fcc492d0584c7",
+                "reference": "9903c5f5db0f94329141a077975fcc492d0584c7",
                 "shasum": ""
             },
             "require": {
@@ -25,7 +25,7 @@
                 "php": ">=7.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "~6.5"
+                "phpunit/phpunit": "~7.2"
             },
             "type": "library",
             "autoload": {
@@ -45,7 +45,7 @@
             ],
             "description": "Berlioz Configuration",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-06-29 21:44:26"
+            "time": "2018-07-13T16:18:58+00:00"
         },
         {
             "name": "berlioz/service-container",
@@ -86,7 +86,7 @@
             ],
             "description": "Berlioz Service Container",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-06-11 17:02:12"
+            "time": "2018-06-11T17:02:12+00:00"
         },
         {
             "name": "berlioz/utils",
@@ -94,12 +94,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Utils.git",
-                "reference": "538db34870e27c75109e44fb55655d7cd2122402"
+                "reference": "dc26fa280b364e27ffe707349e9105725eb02495"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Utils/zipball/538db34870e27c75109e44fb55655d7cd2122402",
-                "reference": "538db34870e27c75109e44fb55655d7cd2122402",
+                "url": "https://api.github.com/repos/BerliozFramework/Utils/zipball/dc26fa280b364e27ffe707349e9105725eb02495",
+                "reference": "dc26fa280b364e27ffe707349e9105725eb02495",
                 "shasum": ""
             },
             "require": {
@@ -129,7 +129,7 @@
             ],
             "description": "Additional functions for PHP",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-07-09 14:47:37"
+            "time": "2018-07-13T17:12:53+00:00"
         },
         {
             "name": "psr/container",
@@ -381,22 +381,22 @@
         },
         {
             "name": "phar-io/manifest",
-            "version": "1.0.1",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phar-io/manifest.git",
-                "reference": "2df402786ab5368a0169091f61a7c1e0eb6852d0"
+                "reference": "7761fcacf03b4d4f16e7ccb606d4879ca431fcf4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phar-io/manifest/zipball/2df402786ab5368a0169091f61a7c1e0eb6852d0",
-                "reference": "2df402786ab5368a0169091f61a7c1e0eb6852d0",
+                "url": "https://api.github.com/repos/phar-io/manifest/zipball/7761fcacf03b4d4f16e7ccb606d4879ca431fcf4",
+                "reference": "7761fcacf03b4d4f16e7ccb606d4879ca431fcf4",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-phar": "*",
-                "phar-io/version": "^1.0.1",
+                "phar-io/version": "^2.0",
                 "php": "^5.6 || ^7.0"
             },
             "type": "library",
@@ -432,20 +432,20 @@
                 }
             ],
             "description": "Component for reading phar.io manifest information from a PHP Archive (PHAR)",
-            "time": "2017-03-05T18:14:27+00:00"
+            "time": "2018-07-08T19:23:20+00:00"
         },
         {
             "name": "phar-io/version",
-            "version": "1.0.1",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phar-io/version.git",
-                "reference": "a70c0ced4be299a63d32fa96d9281d03e94041df"
+                "reference": "45a2ec53a73c70ce41d55cedef9063630abaf1b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phar-io/version/zipball/a70c0ced4be299a63d32fa96d9281d03e94041df",
-                "reference": "a70c0ced4be299a63d32fa96d9281d03e94041df",
+                "url": "https://api.github.com/repos/phar-io/version/zipball/45a2ec53a73c70ce41d55cedef9063630abaf1b6",
+                "reference": "45a2ec53a73c70ce41d55cedef9063630abaf1b6",
                 "shasum": ""
             },
             "require": {
@@ -479,7 +479,7 @@
                 }
             ],
             "description": "Library for handling version information and constraints",
-            "time": "2017-03-05T17:38:23+00:00"
+            "time": "2018-07-08T19:19:57+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -947,16 +947,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "7.2.6",
+            "version": "7.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "400a3836ee549ae6f665323ac3f21e27eac7155f"
+                "reference": "8e878aff7917ef66e702e03d1359b16eee254e2c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/400a3836ee549ae6f665323ac3f21e27eac7155f",
-                "reference": "400a3836ee549ae6f665323ac3f21e27eac7155f",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/8e878aff7917ef66e702e03d1359b16eee254e2c",
+                "reference": "8e878aff7917ef66e702e03d1359b16eee254e2c",
                 "shasum": ""
             },
             "require": {
@@ -967,8 +967,8 @@
                 "ext-mbstring": "*",
                 "ext-xml": "*",
                 "myclabs/deep-copy": "^1.7",
-                "phar-io/manifest": "^1.0.1",
-                "phar-io/version": "^1.0",
+                "phar-io/manifest": "^1.0.2",
+                "phar-io/version": "^2.0",
                 "php": "^7.1",
                 "phpspec/prophecy": "^1.7",
                 "phpunit/php-code-coverage": "^6.0.7",
@@ -1027,7 +1027,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2018-06-21T13:13:39+00:00"
+            "time": "2018-07-15T05:20:50+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -1076,16 +1076,16 @@
         },
         {
             "name": "sebastian/comparator",
-            "version": "3.0.1",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/comparator.git",
-                "reference": "591a30922f54656695e59b1f39501aec513403da"
+                "reference": "5de4fc177adf9bce8df98d8d141a7559d7ccf6da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/591a30922f54656695e59b1f39501aec513403da",
-                "reference": "591a30922f54656695e59b1f39501aec513403da",
+                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/5de4fc177adf9bce8df98d8d141a7559d7ccf6da",
+                "reference": "5de4fc177adf9bce8df98d8d141a7559d7ccf6da",
                 "shasum": ""
             },
             "require": {
@@ -1136,7 +1136,7 @@
                 "compare",
                 "equality"
             ],
-            "time": "2018-06-14T15:05:28+00:00"
+            "time": "2018-07-12T15:12:46+00:00"
         },
         {
             "name": "sebastian/diff",
