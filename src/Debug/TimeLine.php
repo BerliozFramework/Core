@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
-class TimeLine extends AbstractSection
+class TimeLine extends AbstractSection implements \Countable
 {
     /** @var \Berlioz\Core\Debug\Activity[] Activities */
     private $activities;
@@ -25,6 +25,14 @@ class TimeLine extends AbstractSection
     public function __construct()
     {
         $this->activities = [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count()
+    {
+        return count($this->activities);
     }
 
     /**

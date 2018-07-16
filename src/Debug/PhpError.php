@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
-class PhpError extends AbstractSection
+class PhpError extends AbstractSection implements \Countable
 {
     /** @var array PHP errors */
     private $phpErrors;
@@ -25,6 +25,14 @@ class PhpError extends AbstractSection
     public function __construct()
     {
         $this->phpErrors = [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count()
+    {
+        return count($this->phpErrors);
     }
 
     /**
