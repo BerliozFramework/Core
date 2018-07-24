@@ -31,11 +31,7 @@ class Config extends ExtendedJsonConfig
      */
     public function extendsJson(string $json, bool $jsonIsUrl = false, bool $isParent = true): ExtendedJsonConfig
     {
-        if ($jsonIsUrl && ($json = file_get_contents($json)) === false) {
-            throw new ConfigException(sprintf('Unable to load file config "%s"', $json));
-        }
-
-        $config = $this->load($json, false);
+        $config = $this->load($json, $jsonIsUrl);
 
         return $this->extendsArray($config, $isParent);
     }
