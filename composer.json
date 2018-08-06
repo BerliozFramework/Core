@@ -24,6 +24,8 @@
   "require": {
     "php": ">=7.1",
     "ext-intl": "*",
+    "ext-mbstring": "*",
+    "ext-zlib": "*",
     "berlioz/config": "@dev",
     "berlioz/service-container": "@dev",
     "berlioz/utils": "@dev",
