@@ -14,7 +14,6 @@ declare(strict_types=1);
 
 namespace Berlioz\Core;
 
-use Berlioz\Config\Exception\ConfigException;
 use Berlioz\Config\ExtendedJsonConfig;
 
 class Config extends ExtendedJsonConfig
