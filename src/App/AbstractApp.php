@@ -19,6 +19,7 @@ use Berlioz\Config\ConfigAwareTrait;
 use Berlioz\Config\ConfigInterface;
 use Berlioz\Core\Debug;
 use Berlioz\Core\Exception\BerliozException;
+use Berlioz\Core\Exception\ConfigException;
 use Berlioz\ServiceContainer\ServiceContainer;
 use Berlioz\ServiceContainer\ServiceContainerAwareInterface;
 use Berlioz\ServiceContainer\ServiceContainerAwareTrait;
@@ -99,28 +100,32 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
      * Get service container.
      *
      * @return \Berlioz\ServiceContainer\ServiceContainer
-     * @throws \Berlioz\Config\Exception\ConfigException
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getServiceContainer(): ServiceContainer
     {
-        if (!$this->hasServiceContainer()) {
-            $serviceContainerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
+        try {
+            if (!$this->hasServiceContainer()) {
+                $serviceContainerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
 
-            $servicesConfig = $this->getConfig()->get('services', []);
-            $servicesConstraints = $servicesConfig['_constraints'] ?: [];
-            unset($servicesConfig['_constraints']);
+                $servicesConfig = $this->getConfig()->get('services', []);
+                $servicesConstraints = $servicesConfig['_constraints'] ?: [];
+                unset($servicesConfig['_constraints']);
 
-            // Init service container with constraints
-            $this->setServiceContainer($serviceContainer = new ServiceContainer($servicesConfig, $servicesConstraints));
+                // Init service container with constraints
+                $this->setServiceContainer($serviceContainer = new ServiceContainer($servicesConfig, $servicesConstraints));
 
-            // Register default services
-            $serviceContainer->register('berlioz', $this);
-            $serviceContainer->register('config', $this->getConfig());
+                // Register default services
+                $serviceContainer->register('berlioz', $this);
+                $serviceContainer->register('config', $this->getConfig());
 
-            $this->getDebug()->getTimeLine()->addActivity($serviceContainerActivity->end());
+                $this->getDebug()->getTimeLine()->addActivity($serviceContainerActivity->end());
+            }
+
+            return $this->serviceContainer;
+        } catch (\Berlioz\Config\Exception\ConfigException $e) {
+            throw new ConfigException('Configuration error', 0, $e);
         }
-
-        return $this->serviceContainer;
     }
 
     /**
