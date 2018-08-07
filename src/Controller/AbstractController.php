@@ -16,8 +16,10 @@ namespace Berlioz\Core\Controller;
 
 use Berlioz\Core\App\AbstractApp;
 use Berlioz\Core\App\AppAwareTrait;
+use Berlioz\Core\Exception\BerliozException;
+use Berlioz\Core\Exception\ContainerException;
 use Berlioz\Core\Package\TemplateEngine;
-use Berlioz\ServiceContainer\Exception\ContainerException;
+use Psr\Container\ContainerExceptionInterface;
 
 abstract class AbstractController implements ControllerInterface
 {
@@ -50,14 +52,16 @@ abstract class AbstractController implements ControllerInterface
      *
      * @return mixed
      * @throws \RuntimeException if a error occurred in Berlioz Framework
-     * @throws \Berlioz\Config\Exception\ConfigException
-     * @throws \Psr\Container\ContainerExceptionInterface if an error occurred in service container
-     * @throws \Psr\Container\NotFoundExceptionInterface if service not found
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     protected function getService(string $id)
     {
-        if (is_null($serviceContainer = $this->getApp()->getServiceContainer())) {
-            throw new \RuntimeException('No service container defined in application');
+        try {
+            if (is_null($serviceContainer = $this->getApp()->getServiceContainer())) {
+                throw new BerliozException('No service container defined in application');
+            }
+        } catch (ContainerExceptionInterface $e) {
+            throw new ContainerException('Service container error', 0, $e);
         }
 
         return $serviceContainer->get($id);
@@ -70,10 +74,7 @@ abstract class AbstractController implements ControllerInterface
      * @param mixed[] $variables Variables for template
      *
      * @return string Output content
-     * @throws \Berlioz\Config\Exception\ConfigException
-     * @throws \RuntimeException if a error occurred in Berlioz Framework
-     * @throws \Psr\Container\ContainerExceptionInterface if an error occurred in service container
-     * @throws \Psr\Container\NotFoundExceptionInterface if service not found
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     protected function render(string $name, array $variables = []): string
     {

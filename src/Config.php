@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core;
 
 use Berlioz\Config\ExtendedJsonConfig;
+use Berlioz\Core\Exception\ConfigException;
 
 class Config extends ExtendedJsonConfig
 {
@@ -26,13 +27,17 @@ class Config extends ExtendedJsonConfig
      * @param bool   $isParent  If is parent JSON to extends (default: true)
      *
      * @return static
-     * @throws \Berlioz\Config\Exception\ConfigException
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function extendsJson(string $json, bool $jsonIsUrl = false, bool $isParent = true): ExtendedJsonConfig
     {
-        $config = $this->load($json, $jsonIsUrl);
+        try {
+            $config = $this->load($json, $jsonIsUrl);
 
-        return $this->extendsArray($config, $isParent);
+            return $this->extendsArray($config, $isParent);
+        } catch (\Throwable $e) {
+            throw new ConfigException('Configuration error', 0, $e);
+        }
     }
 
     /**
