@@ -1,0 +1,20 @@
+{
+  "berlioz": {
+    "debug": false,
+    "directories": {
+      "var": "%berlioz.directories.app%/var",
+      "debug": "%berlioz.directories.var%/debug",
+      "cache": "%berlioz.directories.var%/cache",
+      "log": "%berlioz.directories.var%/log",
+      "tmp": "%berlioz.directories.var%/tmp",
+      "vendor": "%berlioz.directories.app%/vendor"
+    }
+  },
+  "services": {
+    "_constraints": {
+      "berlioz": "Berlioz\\Core\\App\\AbstractApp",
+      "cache": "Psr\\SimpleCache\\CacheInterface",
+      "config": "Berlioz\\Config\\ConfigInterface"
+    }
+  }
+}
