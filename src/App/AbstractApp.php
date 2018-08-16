@@ -14,31 +14,39 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\App;
 
-use Berlioz\Config\ConfigAwareInterface;
-use Berlioz\Config\ConfigAwareTrait;
-use Berlioz\Config\ConfigInterface;
+use Berlioz\Core\Config;
 use Berlioz\Core\Debug;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Exception\ConfigException;
+use Berlioz\Core\Exception\PackageException;
+use Berlioz\Core\Package\PackageInterface;
 use Berlioz\ServiceContainer\ServiceContainer;
 use Berlioz\ServiceContainer\ServiceContainerAwareInterface;
 use Berlioz\ServiceContainer\ServiceContainerAwareTrait;
 
-abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwareInterface
+abstract class AbstractApp implements ServiceContainerAwareInterface
 {
-    use ConfigAwareTrait;
     use ServiceContainerAwareTrait;
     /** @var \Berlioz\Core\Debug */
     protected $debug;
+    /** @var \Berlioz\Core\Config Configuration */
+    private $config;
+    /** @var string Locale */
+    private $locale;
+    /** @var \Berlioz\Core\Package\PackageInterface[] Packages */
+    private $packages;
+    // Directories
     /** @var string Root directory */
     protected $rootDirectory;
     /** @var string App directory */
     protected $appDirectory;
-    /** @var string Locale */
-    private $locale;
+    /** @var string Config directory */
+    protected $configDirectory;
 
     /**
      * AbstractApp constructor.
+     *
+     * @throws \Berlioz\Core\Exception\PackageException
      */
     public function __construct()
     {
@@ -49,6 +57,8 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
                                    ->start($_SERVER['REQUEST_TIME_FLOAT'])
                                    ->end());
         }
+
+        $this->loadPackages();
     }
 
     /**
@@ -58,16 +68,15 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
     {
         try {
             if ($this->getDebug()->isEnabled()) {
-                if (!empty($debugDirectory = $this->getConfig()->get('berlioz.directories.debug'))) {
-                    if (is_dir($debugDirectory) || mkdir($debugDirectory, 0777, true)) {
-                        file_put_contents($debugDirectory . DIRECTORY_SEPARATOR . $this->getDebug()->getUniqid() . '.debug',
-                                          gzdeflate(serialize($this->getDebug())));
-                    }
-                }
+                $this->getDebug()->saveReport();
             }
         } catch (\Throwable $e) {
         }
     }
+
+    //////////////
+    /// DEBUG ///
+    //////////////
 
     /**
      * Get debug manager.
@@ -83,18 +92,61 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
         return $this->debug;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setConfig(ConfigInterface $config)
-    {
-        $this->config = $config;
+    //////////////
+    /// CONFIG ///
+    //////////////
 
-        // Init default configuration
-        $config->setVariable('berlioz.directories.root', $this->getRootDir());
-        $config->setVariable('berlioz.directories.app', $this->getAppDir());
-        $config->setVariable('directory_separator', DIRECTORY_SEPARATOR);
+    /**
+     * Get configuration.
+     *
+     * @return \Berlioz\Core\Config
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    public function getConfig(): ?Config
+    {
+        try {
+            if (is_null($this->config)) {
+                $configActivity = (new Debug\Activity('Config (initialization)', 'Berlioz'))->start();
+
+                // Create configuration (from default configuration)
+                $config = new Config(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'resources', 'config.default.json']), true);
+
+                // Init default configuration
+                $config->setVariable('berlioz.directories.config', $this->getConfigDir());
+                $config->setVariable('berlioz.directories.root', $this->getRootDir());
+                $config->setVariable('berlioz.directories.app', $this->getAppDir());
+                $config->setVariable('directory_separator', DIRECTORY_SEPARATOR);
+
+                // Search website configs and add
+                foreach (glob($this->getConfigDir() . DIRECTORY_SEPARATOR . '*.json') as $configFile) {
+                    $config->extendsJson($configFile, true, false);
+                }
+
+                $this->getDebug()->getTimeLine()->addActivity($configActivity->end());
+
+                // Set config to parent
+                $this->config = $config;
+            }
+
+            return $this->config;
+        } catch (BerliozException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new ConfigException('Configuration error', 0, $e);
+        }
     }
+
+    /**
+     * Is config initialized?
+     */
+    public function isConfigInitialized()
+    {
+        return !is_null($this->config);
+    }
+
+    /////////////////////////
+    /// SERVICE CONTAINER ///
+    /////////////////////////
 
     /**
      * Get service container.
@@ -128,6 +180,93 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
         }
     }
 
+    ////////////////
+    /// PACKAGES ///
+    ////////////////
+
+    /**
+     * Load packages.
+     *
+     * @return void
+     * @throws \Berlioz\Core\Exception\PackageException
+     */
+    protected function loadPackages()
+    {
+        $packagesActivity = (new Debug\Activity('Packages (instantiation)', 'Berlioz'))->start();
+
+        // Get packages from PHP file
+        try {
+            $this->packages = [];
+            foreach ($this->getConfig()->get('packages', []) as $packageClass) {
+                if (!is_a($packageClass, PackageInterface::class, true)) {
+                    if (class_exists($packageClass)) {
+                        throw new PackageException(sprintf('Package class "%s" does not exists', $packageClass));
+                    } else {
+                        throw new PackageException(sprintf('Package class "%s" must implements "%s" interface', $packageClass, PackageInterface::class));
+                    }
+                }
+
+                // Create instance of package
+                $package = $this->getServiceContainer()
+                                ->getInstantiator()
+                                ->newInstanceOf($packageClass);
+
+                // Add package
+                $this->packages[get_class($package)] = $package;
+            }
+        } catch (PackageException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new PackageException('Error during packages loading', 0, $e);
+        }
+
+        $this->initPackages();
+
+        $this->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
+    }
+
+    /**
+     * Init packages.
+     *
+     * @throws \Berlioz\Core\Exception\PackageException
+     */
+    protected function initPackages()
+    {
+        /**
+         * @var string                                 $packageClass
+         * @var \Berlioz\Core\Package\PackageInterface $package
+         */
+        foreach ($this->packages as $packageClass => $package) {
+            try {
+                // Load default configuration
+                if (!is_null($configFileName = $package->getDefaultConfigFilename())) {
+                    $this->getConfig()->extendsJson($configFileName, true, true);
+                }
+
+                // Init package
+                $package->init();
+            } catch (\Throwable $e) {
+                throw new PackageException(sprintf('Error during initialization of package: "%s"', $packageClass), 0, $e);
+            }
+        }
+    }
+
+    /**
+     * Get package.
+     *
+     * @param string $class Class name of package
+     *
+     * @return \Berlioz\Core\Package\PackageInterface|null
+     */
+    public function getPackage(string $class): ?PackageInterface
+    {
+        return $this->packages[$class] ?? null;
+    }
+
+    //////////////
+    /// LOCALE ///
+    //////////////
+
     /**
      * Get locale.
      *
@@ -157,6 +296,10 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
 
         return $this;
     }
+
+    ///////////////////
+    /// DIRECTORIES ///
+    ///////////////////
 
     /**
      * Get root directory.
@@ -233,6 +376,34 @@ abstract class AbstractApp implements ConfigAwareInterface, ServiceContainerAwar
     public function setAppDir(string $appDirectory): AbstractApp
     {
         $this->appDirectory = $appDirectory;
+
+        return $this;
+    }
+
+    /**
+     * Get config directory.
+     *
+     * @return string
+     */
+    public function getConfigDir(): string
+    {
+        if (is_null($this->configDirectory)) {
+            $this->configDirectory = $this->getAppDir() . DIRECTORY_SEPARATOR . 'config';
+        }
+
+        return $this->configDirectory;
+    }
+
+    /**
+     * Set config directory.
+     *
+     * @param string $configDirectory
+     *
+     * @return static
+     */
+    public function setConfigDir(string $configDirectory): AbstractApp
+    {
+        $this->configDirectory = $configDirectory;
 
         return $this;
     }
