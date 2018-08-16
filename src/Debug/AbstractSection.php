@@ -19,6 +19,13 @@ abstract class AbstractSection implements Section
     /**
      * @inheritdoc
      */
+    public function saveReport()
+    {
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSectionId(): string
     {
         $name = mb_strtolower($this->getSectionName());

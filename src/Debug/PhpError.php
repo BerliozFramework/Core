@@ -27,12 +27,24 @@ class PhpError extends AbstractSection implements \Countable
         $this->phpErrors = [];
     }
 
+    /////////////////////////
+    /// SECTION INTERFACE ///
+    /////////////////////////
+
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function count()
+    public function __toString(): string
     {
-        return count($this->phpErrors);
+        return var_export($this->phpErrors, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSectionName(): string
+    {
+        return 'PHP Errors';
     }
 
     /**
@@ -51,13 +63,21 @@ class PhpError extends AbstractSection implements \Countable
         $this->phpErrors = unserialize($serialized);
     }
 
+    ///////////////////////////
+    /// COUNTABLE INTERFACE ///
+    ///////////////////////////
+
     /**
      * @inheritdoc
      */
-    public function __toString(): string
+    public function count()
     {
-        return var_export($this->phpErrors, true);
+        return count($this->phpErrors);
     }
+
+    ////////////////////
+    /// USER DEFINED ///
+    ////////////////////
 
     /**
      * Handle.
@@ -69,14 +89,6 @@ class PhpError extends AbstractSection implements \Countable
         set_error_handler([$this, 'phpErrorHandler']);
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSectionName(): string
-    {
-        return 'PHP Errors';
     }
 
     /**

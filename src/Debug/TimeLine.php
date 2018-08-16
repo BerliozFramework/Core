@@ -27,12 +27,24 @@ class TimeLine extends AbstractSection implements \Countable
         $this->activities = [];
     }
 
+    /////////////////////////
+    /// SECTION INTERFACE ///
+    /////////////////////////
+
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function count()
+    public function __toString(): string
     {
-        return count($this->activities);
+        return var_export($this->activities, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSectionName(): string
+    {
+        return 'Activities';
     }
 
     /**
@@ -51,21 +63,21 @@ class TimeLine extends AbstractSection implements \Countable
         $this->activities = unserialize($serialized);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function __toString(): string
-    {
-        return var_export($this->activities, true);
-    }
+    ///////////////////////////
+    /// COUNTABLE INTERFACE ///
+    ///////////////////////////
 
     /**
      * @inheritdoc
      */
-    public function getSectionName(): string
+    public function count()
     {
-        return 'Activities';
+        return count($this->activities);
     }
+
+    ////////////////////
+    /// USER DEFINED ///
+    ////////////////////
 
     /**
      * Get groups.
