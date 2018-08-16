@@ -112,7 +112,7 @@ class Debug implements AppAwareInterface, \Serializable
     {
         if (is_null($this->enabled)) {
             try {
-                return $this->getApp()->getConfig()->get('berlioz.debug', false);
+                return (bool) $this->getApp()->getConfig()->get('berlioz.debug', false);
             } catch (\Throwable $e) {
                 return false;
             }
@@ -133,6 +133,26 @@ class Debug implements AppAwareInterface, \Serializable
         $this->enabled = $enabled;
 
         return $this;
+    }
+
+    /**
+     * Save report.
+     *
+     * @throws \Berlioz\Config\Exception\ConfigException
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    public function saveReport()
+    {
+        foreach ($this->sections as $section) {
+            $section->saveReport();
+        }
+
+        if (!empty($debugDirectory = $this->getApp()->getConfig()->get('berlioz.directories.debug'))) {
+            if (is_dir($debugDirectory) || mkdir($debugDirectory, 0777, true)) {
+                file_put_contents($debugDirectory . DIRECTORY_SEPARATOR . $this->getUniqid() . '.debug',
+                                  gzdeflate(serialize($this)));
+            }
+        }
     }
 
     /**
