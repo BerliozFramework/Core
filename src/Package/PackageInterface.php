@@ -21,4 +21,19 @@ namespace Berlioz\Core\Package;
  */
 interface PackageInterface
 {
+    /**
+     * Get default config filename of package.
+     *
+     * @return string|null
+     */
+    public function getDefaultConfigFilename(): ?string;
+
+    /**
+     * Init package.
+     *
+     * Method called after creation of all packages.
+     *
+     * @return mixed
+     */
+    public function init();
 }
