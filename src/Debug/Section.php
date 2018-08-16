@@ -24,6 +24,13 @@ interface Section extends \Serializable
     public function __toString(): string;
 
     /**
+     * Save report.
+     *
+     * @return mixed
+     */
+    public function saveReport();
+
+    /**
      * Get section id.
      *
      * @return string
