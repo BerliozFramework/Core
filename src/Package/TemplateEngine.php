@@ -16,7 +16,7 @@ namespace Berlioz\Core\Package;
 
 use Berlioz\Core\App;
 
-interface TemplateEngine extends App\AppAwareInterface, PackageInterface
+interface TemplateEngine extends App\AppAwareInterface
 {
     /**
      * Add global variable.
