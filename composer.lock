@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4b0f9c1ae21572eeda1af05b9dccd0f",
+    "content-hash": "1ac39b50aa62e50bad12e76646369eae",
     "packages": [
         {
             "name": "berlioz/config",
@@ -12,20 +12,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Config.git",
-                "reference": "9903c5f5db0f94329141a077975fcc492d0584c7"
+                "reference": "0f5caf9c21cd35017389025d2f4e0cb8017f9c50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/9903c5f5db0f94329141a077975fcc492d0584c7",
-                "reference": "9903c5f5db0f94329141a077975fcc492d0584c7",
+                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/0f5caf9c21cd35017389025d2f4e0cb8017f9c50",
+                "reference": "0f5caf9c21cd35017389025d2f4e0cb8017f9c50",
                 "shasum": ""
             },
             "require": {
                 "berlioz/utils": "dev-develop",
-                "php": ">=7.1"
+                "ext-json": "*",
+                "php": "^7.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "~7.2"
+                "phpunit/phpunit": "^7.2"
             },
             "type": "library",
             "autoload": {
@@ -45,7 +46,7 @@
             ],
             "description": "Berlioz Configuration",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-07-13T16:18:58+00:00"
+            "time": "2018-08-14T18:07:04+00:00"
         },
         {
             "name": "berlioz/service-container",
@@ -1694,10 +1695,14 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.1",
+        "php": "^7.1",
         "ext-intl": "*",
+        "ext-json": "*",
         "ext-mbstring": "*",
         "ext-zlib": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "platform-overrides": {
+        "php": "7.1.0"
+    }
 }
