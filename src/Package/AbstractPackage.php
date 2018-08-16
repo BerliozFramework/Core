@@ -58,9 +58,11 @@ abstract class AbstractPackage implements PackageInterface, AppAwareInterface
      */
     public function registerTemplatePath(string $path, string $namespace): AbstractPackage
     {
-        /** @var \Berlioz\Core\Package\TemplateEngine $templateEngine */
-        $templateEngine = $this->getApp()->getServiceContainer()->get(TemplateEngine::class);
-        $templateEngine->registerPath($path, $namespace);
+        if ($this->getApp()->getServiceContainer()->has(TemplateEngine::class)) {
+            /** @var \Berlioz\Core\Package\TemplateEngine $templateEngine */
+            $templateEngine = $this->getApp()->getServiceContainer()->get(TemplateEngine::class);
+            $templateEngine->registerPath($path, $namespace);
+        }
 
         return $this;
     }
