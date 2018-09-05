@@ -24,7 +24,7 @@ use Berlioz\ServiceContainer\ServiceContainer;
 use Berlioz\ServiceContainer\ServiceContainerAwareInterface;
 use Berlioz\ServiceContainer\ServiceContainerAwareTrait;
 
-abstract class AbstractApp implements ServiceContainerAwareInterface
+abstract class AbstractApp implements ServiceContainerAwareInterface, \Serializable
 {
     use ServiceContainerAwareTrait;
     /** @var \Berlioz\Core\Debug */
@@ -50,15 +50,7 @@ abstract class AbstractApp implements ServiceContainerAwareInterface
      */
     public function __construct()
     {
-        if ($_SERVER['REQUEST_TIME_FLOAT']) {
-            $this->getDebug()
-                 ->getTimeLine()
-                 ->addActivity((new Debug\Activity('PHP initialization', 'Berlioz'))
-                                   ->start($_SERVER['REQUEST_TIME_FLOAT'])
-                                   ->end());
-        }
-
-        $this->loadPackages();
+        $this->init();
     }
 
     /**
@@ -72,6 +64,59 @@ abstract class AbstractApp implements ServiceContainerAwareInterface
             }
         } catch (\Throwable $e) {
         }
+    }
+
+    /**
+     * Initialization.
+     *
+     * @throws \Berlioz\Core\Exception\PackageException
+     */
+    private function init()
+    {
+        if ($_SERVER['REQUEST_TIME_FLOAT']) {
+            $this->getDebug()
+                 ->getTimeLine()
+                 ->addActivity((new Debug\Activity('PHP initialization', 'Berlioz'))
+                                   ->start($_SERVER['REQUEST_TIME_FLOAT'])
+                                   ->end());
+        }
+
+        $this->loadPackages();
+    }
+
+    /////////////////////
+    /// SERIALIZATION ///
+    /////////////////////
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize()
+    {
+        return serialize(['config'           => $this->config,
+                          'locale'           => $this->locale,
+                          'rootDirectory'    => $this->rootDirectory,
+                          'appDirectory'     => $this->appDirectory,
+                          'configDirectory'  => $this->configDirectory,
+                          'serviceContainer' => $this->serviceContainer]);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \Berlioz\Core\Exception\PackageException
+     */
+    public function unserialize($serialized)
+    {
+        $tmpUnserialized = unserialize($serialized);
+
+        $this->config = $tmpUnserialized['config'];
+        $this->locale = $tmpUnserialized['locale'];
+        $this->rootDirectory = $tmpUnserialized['rootDirectory'];
+        $this->appDirectory = $tmpUnserialized['appDirectory'];
+        $this->configDirectory = $tmpUnserialized['configDirectory'];
+        $this->serviceContainer = $tmpUnserialized['serviceContainer'];
+
+        $this->init();
     }
 
     //////////////

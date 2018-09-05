@@ -54,21 +54,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/ServiceContainer.git",
-                "reference": "84bf722d3ce8bd67c93cf9ec6d720abce813ec83"
+                "reference": "ea0ca9389f427c57883a705be31a8c1a3da7e2bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/ServiceContainer/zipball/84bf722d3ce8bd67c93cf9ec6d720abce813ec83",
-                "reference": "84bf722d3ce8bd67c93cf9ec6d720abce813ec83",
+                "url": "https://api.github.com/repos/BerliozFramework/ServiceContainer/zipball/ea0ca9389f427c57883a705be31a8c1a3da7e2bd",
+                "reference": "ea0ca9389f427c57883a705be31a8c1a3da7e2bd",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1",
-                "psr/container": "1.0.0"
+                "php": "^7.1",
+                "psr/container": "^1.0.0"
             },
             "require-dev": {
                 "ext-json": "*",
-                "phpunit/phpunit": "~6.5"
+                "phpunit/phpunit": "^7.3"
             },
             "type": "library",
             "autoload": {
@@ -88,7 +88,7 @@
             ],
             "description": "Berlioz Service Container",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-08-13T13:38:57+00:00"
+            "time": "2018-09-03T14:30:05+00:00"
         },
         {
             "name": "berlioz/utils",
@@ -96,19 +96,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Utils.git",
-                "reference": "dc26fa280b364e27ffe707349e9105725eb02495"
+                "reference": "6c7aa3903587d02439c07a9f536c0b8e4228db3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Utils/zipball/dc26fa280b364e27ffe707349e9105725eb02495",
-                "reference": "dc26fa280b364e27ffe707349e9105725eb02495",
+                "url": "https://api.github.com/repos/BerliozFramework/Utils/zipball/6c7aa3903587d02439c07a9f536c0b8e4228db3a",
+                "reference": "6c7aa3903587d02439c07a9f536c0b8e4228db3a",
                 "shasum": ""
             },
             "require": {
+                "ext-gd": "*",
+                "ext-iconv": "*",
+                "ext-intl": "*",
+                "ext-mbstring": "*",
                 "php": ">=7.1"
-            },
-            "suggest": {
-                "ext-gd": "Needed to have additional functions to manipulate images"
             },
             "type": "library",
             "autoload": {
@@ -131,7 +132,7 @@
             ],
             "description": "Additional functions for PHP",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2018-07-13T17:12:53+00:00"
+            "time": "2018-08-22T09:16:10+00:00"
         },
         {
             "name": "psr/container",
@@ -949,16 +950,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "7.3.1",
+            "version": "7.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "f9b14c17860eccb440a0352a117a81eb754cff5a"
+                "reference": "1bd5629cccfb2c0a9ef5474b4ff772349e1ec898"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f9b14c17860eccb440a0352a117a81eb754cff5a",
-                "reference": "f9b14c17860eccb440a0352a117a81eb754cff5a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1bd5629cccfb2c0a9ef5474b4ff772349e1ec898",
+                "reference": "1bd5629cccfb2c0a9ef5474b4ff772349e1ec898",
                 "shasum": ""
             },
             "require": {
@@ -1029,7 +1030,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2018-08-07T06:44:28+00:00"
+            "time": "2018-09-01T15:49:55+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
