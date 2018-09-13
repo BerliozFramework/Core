@@ -389,18 +389,21 @@ abstract class AbstractApp implements ServiceContainerAwareInterface, \Serializa
     public function getAppDir(): string
     {
         if (is_null($this->appDirectory)) {
+            $myComposerFilename = realpath(__DIR__ . '/../../composer.json');
+
             // Search composer.json for app directory
             $directory = $this->getRootDir();
-            $i = 0;
             do {
                 $directoryBefore = $directory;
 
-                if (file_exists($directory . DIRECTORY_SEPARATOR . 'composer.json')) {
-                    $this->appDirectory = $directory;
+                if (file_exists($composerFilename = $directory . DIRECTORY_SEPARATOR . 'composer.json')) {
+                    if ($composerFilename != $myComposerFilename) {
+                        $this->appDirectory = $directory;
+                        break;
+                    }
                 }
 
-                $directory = realpath($directory . DIRECTORY_SEPARATOR . '..');
-                $i++;
+                $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
             } while ($directory !== false && $directoryBefore != $directory);
 
             if (is_null($this->appDirectory)) {
