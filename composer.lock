@@ -54,12 +54,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/ServiceContainer.git",
-                "reference": "5afe389b6d48490f598a8b386c0b29008f75c836"
+                "reference": "8db51868f3814a19fd6820efc8d9eb825aa3c3e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/ServiceContainer/zipball/5afe389b6d48490f598a8b386c0b29008f75c836",
-                "reference": "5afe389b6d48490f598a8b386c0b29008f75c836",
+                "url": "https://api.github.com/repos/BerliozFramework/ServiceContainer/zipball/8db51868f3814a19fd6820efc8d9eb825aa3c3e2",
+                "reference": "8db51868f3814a19fd6820efc8d9eb825aa3c3e2",
                 "shasum": ""
             },
             "require": {
@@ -91,7 +91,7 @@
             ],
             "description": "Berlioz Service Container",
             "homepage": "http://getberlioz.com",
-            "time": "2018-12-28T15:30:29+00:00"
+            "time": "2018-12-28T16:09:08+00:00"
         },
         {
             "name": "berlioz/utils",
