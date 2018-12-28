@@ -17,6 +17,7 @@ namespace Berlioz\Core\App;
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
 use Berlioz\Core\CoreAwareTrait;
+use Berlioz\ServiceContainer\Service;
 
 /**
  * Class AbstractApp.
@@ -42,6 +43,9 @@ abstract class AbstractApp implements CoreAwareInterface
         }
 
         $this->setCore($core);
+
+        // Add me to services
+        $this->getCore()->getServiceContainer()->add(new Service($this, 'app'));
     }
 
     /**
