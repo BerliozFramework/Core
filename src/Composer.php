@@ -141,7 +141,7 @@ class Composer implements \Serializable, CoreAwareInterface
                             str_replace('/', DIRECTORY_SEPARATOR, $name) .
                             DIRECTORY_SEPARATOR .
                             str_replace('/', DIRECTORY_SEPARATOR, $package['target-dir'] ?? '');
-        $packageDirectory = trim($packageDirectory, DIRECTORY_SEPARATOR);
+        $packageDirectory = rtrim($packageDirectory, DIRECTORY_SEPARATOR);
         $composerFile = $packageDirectory . DIRECTORY_SEPARATOR . 'composer.json';
 
         if (!is_dir($packageDirectory)) {
