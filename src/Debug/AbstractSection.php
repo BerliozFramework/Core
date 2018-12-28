@@ -14,6 +14,11 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+/**
+ * Class AbstractSection.
+ *
+ * @package Berlioz\Core\Debug
+ */
 abstract class AbstractSection implements Section
 {
     /**

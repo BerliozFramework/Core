@@ -14,6 +14,11 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+/**
+ * Interface Section.
+ *
+ * @package Berlioz\Core\Debug
+ */
 interface Section extends \Serializable
 {
     /**

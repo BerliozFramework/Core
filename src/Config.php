@@ -17,6 +17,11 @@ namespace Berlioz\Core;
 use Berlioz\Config\ExtendedJsonConfig;
 use Berlioz\Core\Exception\ConfigException;
 
+/**
+ * Class Config.
+ *
+ * @package Berlioz\Core
+ */
 class Config extends ExtendedJsonConfig
 {
     /**
@@ -51,9 +56,9 @@ class Config extends ExtendedJsonConfig
     public function extendsArray(array $config, bool $isParent = true): ExtendedJsonConfig
     {
         if ($isParent) {
-            $this->configuration = array_replace_recursive($config, $this->configuration);
+            $this->configuration = b_array_merge_recursive($config, $this->configuration);
         } else {
-            $this->configuration = array_replace_recursive($this->configuration, $config);
+            $this->configuration = b_array_merge_recursive($this->configuration, $config);
         }
 
         return $this;

@@ -12,13 +12,28 @@
 
 declare(strict_types=1);
 
-namespace Berlioz\Core\Exception;
+namespace Berlioz\Core;
 
 /**
- * Class PackageException.
+ * Interface CoreAwareInterface.
  *
- * @package Berlioz\Core\Exception
+ * @package Berlioz\Core
  */
-class PackageException extends BerliozException
+interface CoreAwareInterface
 {
+    /**
+     * Get core.
+     *
+     * @return \Berlioz\Core\Core|null
+     */
+    public function getCore(): ?Core;
+
+    /**
+     * Set core.
+     *
+     * @param \Berlioz\Core\Core $core
+     *
+     * @return static
+     */
+    public function setCore(Core $core);
 }

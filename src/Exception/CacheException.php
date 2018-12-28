@@ -19,6 +19,6 @@ namespace Berlioz\Core\Exception;
  *
  * @package Berlioz\Core\Exception
  */
-class CacheException extends BerliozException
+class CacheException extends BerliozException implements \Psr\SimpleCache\CacheException
 {
 }

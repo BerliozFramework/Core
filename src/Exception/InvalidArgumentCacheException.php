@@ -10,15 +10,15 @@
  * file that was distributed with this source code, to the root.
  */
 
-declare(strict_types=1);
-
 namespace Berlioz\Core\Exception;
 
+use Psr\SimpleCache\InvalidArgumentException;
+
 /**
- * Class PackageException.
+ * Class InvalidArgumentCacheException.
  *
  * @package Berlioz\Core\Exception
  */
-class PackageException extends BerliozException
+class InvalidArgumentCacheException extends CacheException implements InvalidArgumentException
 {
 }

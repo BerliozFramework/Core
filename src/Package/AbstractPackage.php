@@ -14,30 +14,46 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
-use Berlioz\Core\App\AbstractApp;
-use Berlioz\Core\App\AppAwareInterface;
-use Berlioz\Core\App\AppAwareTrait;
+use Berlioz\Core\CoreAwareTrait;
+use Berlioz\ServiceContainer\Service;
 
-abstract class AbstractPackage implements PackageInterface, AppAwareInterface
+/**
+ * Class AbstractPackage.
+ *
+ * @package Berlioz\Core\Package
+ */
+abstract class AbstractPackage implements PackageInterface, \Serializable
 {
-    use AppAwareTrait;
+    use CoreAwareTrait;
+
+    /////////////////////
+    /// SERIALIZATION ///
+    /////////////////////
 
     /**
-     * AbstractPackage constructor.
-     *
-     * @param \Berlioz\Core\App\AbstractApp $app
+     * @inheritdoc
      */
-    public function __construct(AbstractApp $app)
+    final public function serialize()
     {
-        $this->setApp($app);
+        return serialize([]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getDefaultConfigFilename(): ?string
+    final public function unserialize($serialized)
     {
-        return null;
+    }
+
+    ///////////////
+    /// PACKAGE ///
+    ///////////////
+
+    /**
+     * @inheritdoc
+     */
+    public function register()
+    {
     }
 
     /**
@@ -48,21 +64,31 @@ abstract class AbstractPackage implements PackageInterface, AppAwareInterface
     }
 
     /**
-     * Register template path.
+     * Add new service to the service container.
      *
-     * @param string      $path
-     * @param string|null $namespace
+     * @param \Berlioz\ServiceContainer\Service $service
      *
      * @return static
      * @throws \Berlioz\Core\Exception\BerliozException
      */
-    public function registerTemplatePath(string $path, string $namespace): AbstractPackage
+    protected function addService(Service $service): AbstractPackage
     {
-        if ($this->getApp()->getServiceContainer()->has(TemplateEngine::class)) {
-            /** @var \Berlioz\Core\Package\TemplateEngine $templateEngine */
-            $templateEngine = $this->getApp()->getServiceContainer()->get(TemplateEngine::class);
-            $templateEngine->registerPath($path, $namespace);
-        }
+        $this->getCore()->getServiceContainer()->add($service);
+
+        return $this;
+    }
+
+    /**
+     * Merge configuration.
+     *
+     * @param string $configFileName
+     *
+     * @return static
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    protected function mergeConfig(string $configFileName): AbstractPackage
+    {
+        $this->getCore()->getConfig()->extendsJson($configFileName, true, true);
 
         return $this;
     }
