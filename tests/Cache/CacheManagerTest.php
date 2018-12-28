@@ -20,40 +20,48 @@ class CacheManagerTest extends TestCase
     public function testHas()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testSetMultiple()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testDeleteMultiple()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testSet()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testGet()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testGetMultiple()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testDelete()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 
     public function testClear()
     {
         // @todo
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 }
