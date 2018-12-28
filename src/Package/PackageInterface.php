@@ -14,19 +14,33 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
+use Berlioz\Core\CoreAwareInterface;
+
 /**
  * Interface PackageInterface.
  *
  * @package Berlioz\Core\Package
  */
-interface PackageInterface
+interface PackageInterface extends CoreAwareInterface
 {
     /**
      * Get default config filename of package.
      *
+     * Must return null if no default config file.
+     *
      * @return string|null
      */
-    public function getDefaultConfigFilename(): ?string;
+    //public static function getDefaultConfigFilename(): ?string;
+
+    /**
+     * Register package.
+     *
+     * Method called for the registration of all packages.
+     * Do not use this method to do any actions on framework, only configuration and registration of services.
+     *
+     * @return mixed
+     */
+    public function register();
 
     /**
      * Init package.

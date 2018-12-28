@@ -14,6 +14,11 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+/**
+ * Class Activity.
+ *
+ * @package Berlioz\Core\Debug
+ */
 class Activity
 {
     /** @var string Unique ID */

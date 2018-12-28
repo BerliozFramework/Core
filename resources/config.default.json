@@ -11,10 +11,5 @@
     }
   },
   "services": {
-    "_constraints": {
-      "berlioz": "Berlioz\\Core\\App\\AbstractApp",
-      "cache": "Psr\\SimpleCache\\CacheInterface",
-      "config": "Berlioz\\Config\\ConfigInterface"
-    }
   }
 }

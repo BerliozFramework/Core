@@ -14,16 +14,19 @@ declare(strict_types=1);
 
 namespace Berlioz\Core;
 
-use Berlioz\Core\App\AbstractApp;
-use Berlioz\Core\App\AppAwareInterface;
-use Berlioz\Core\App\AppAwareTrait;
 use Berlioz\Core\Debug\PhpError;
 use Berlioz\Core\Debug\Section;
 use Berlioz\Core\Debug\TimeLine;
+use Berlioz\Core\Exception\BerliozException;
 
-class Debug implements AppAwareInterface, \Serializable
+/**
+ * Class Debug.
+ *
+ * @package Berlioz\Core
+ */
+class Debug implements CoreAwareInterface, \Serializable
 {
-    use AppAwareTrait;
+    use CoreAwareTrait;
     /** @var bool Enabled? */
     protected $enabled;
     /** @var string Unique ID */
@@ -50,21 +53,27 @@ class Debug implements AppAwareInterface, \Serializable
     /**
      * Debug constructor.
      *
-     * @param \Berlioz\Core\App\AbstractApp $app
+     * @param \Berlioz\Core\Core $core
+     *
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
-    public function __construct(AbstractApp $app)
+    public function __construct(Core $core)
     {
-        $this->setApp($app);
-        $this->uniqid = uniqid();
-        $this->datetime = new \DateTime;
+        try {
+            $this->setCore($core);
+            $this->uniqid = uniqid();
+            $this->datetime = new \DateTime;
 
-        $this->systemInfo = [];
-        $this->phpInfo = [];
-        $this->performancesInfo = [];
-        $this->projectInfo = [];
-        $this->timeLine = new TimeLine;
-        $this->phpError = (new PhpError)->handle();
-        $this->sections = [];
+            $this->systemInfo = [];
+            $this->phpInfo = [];
+            $this->performancesInfo = [];
+            $this->projectInfo = [];
+            $this->timeLine = new TimeLine;
+            $this->phpError = (new PhpError)->handle();
+            $this->sections = [];
+        } catch (\Throwable $e) {
+            throw new BerliozException('Unable to init Debug class', 0, $e);
+        }
     }
 
     /**
@@ -86,6 +95,7 @@ class Debug implements AppAwareInterface, \Serializable
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function unserialize($serialized)
     {
@@ -112,7 +122,30 @@ class Debug implements AppAwareInterface, \Serializable
     {
         if (is_null($this->enabled)) {
             try {
-                return (bool) $this->getApp()->getConfig()->get('berlioz.debug', false);
+                $debug = $this->getCore()->getConfig()->get('berlioz.debug', false);
+
+                if (is_bool($debug)) {
+                    return $this->enabled = $debug;
+                }
+
+                // Get ip
+                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+
+                if (is_null($ip)) {
+                    return $this->enabled = false;
+                }
+
+                // Find ip
+                if (in_array($ip, $debug)) {
+                    return $this->enabled = true;
+                }
+
+                // Find host
+                if (in_array(gethostbyaddr($ip), $debug)) {
+                    return $this->enabled = true;
+                }
+
+                return $this->enabled = false;
             } catch (\Throwable $e) {
                 return false;
             }
@@ -147,7 +180,7 @@ class Debug implements AppAwareInterface, \Serializable
             $section->saveReport();
         }
 
-        if (!empty($debugDirectory = $this->getApp()->getConfig()->get('berlioz.directories.debug'))) {
+        if (!empty($debugDirectory = $this->getCore()->getConfig()->get('berlioz.directories.debug'))) {
             if (is_dir($debugDirectory) || mkdir($debugDirectory, 0777, true)) {
                 file_put_contents($debugDirectory . DIRECTORY_SEPARATOR . $this->getUniqid() . '.debug',
                                   gzdeflate(serialize($this)));
@@ -251,7 +284,7 @@ class Debug implements AppAwareInterface, \Serializable
     {
         if (is_null($this->config)) {
             try {
-                $this->config = $this->getApp()->getConfig()->get();
+                $this->config = $this->getCore()->getConfig()->get();
             } catch (\Throwable $e) {
                 $this->config = [];
             }

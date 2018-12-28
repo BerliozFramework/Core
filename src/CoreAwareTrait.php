@@ -12,35 +12,39 @@
 
 declare(strict_types=1);
 
-namespace Berlioz\Core\App;
+namespace Berlioz\Core;
 
 /**
- * Interface AppAwareInterface.
+ * Trait CoreAwareTrait.
  *
- * @package Berlioz\Core\App
+ * @package Berlioz\Core
  */
-interface AppAwareInterface
+trait CoreAwareTrait
 {
-    /**
-     * Get application.
-     *
-     * @return \Berlioz\Core\App\AbstractApp|null
-     */
-    public function getApp(): ?AbstractApp;
+    /** @var \Berlioz\Core\Core Core */
+    private $core;
 
     /**
-     * Set application.
+     * Get core.
      *
-     * @param \Berlioz\Core\App\AbstractApp $app
+     * @return \Berlioz\Core\Core|null
+     */
+    public function getCore(): ?Core
+    {
+        return $this->core;
+    }
+
+    /**
+     * Set core.
+     *
+     * @param \Berlioz\Core\Core $core
      *
      * @return static
      */
-    public function setApp(AbstractApp $app);
+    public function setCore(Core $core)
+    {
+        $this->core = $core;
 
-    /**
-     * Has application ?
-     *
-     * @return bool
-     */
-    public function hasApp(): bool;
+        return $this;
+    }
 }

@@ -14,6 +14,11 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+/**
+ * Class TimeLine.
+ *
+ * @package Berlioz\Core\Debug
+ */
 class TimeLine extends AbstractSection implements \Countable
 {
     /** @var \Berlioz\Core\Debug\Activity[] Activities */
