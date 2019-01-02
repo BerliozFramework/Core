@@ -440,9 +440,9 @@ class Core implements ServiceContainerAwareInterface, \Serializable
                 if (!is_a($packageClass, PackageInterface::class, true)) {
                     if (!class_exists($packageClass)) {
                         throw new PackageException(sprintf('Package class "%s" does not exists', $packageClass));
-                    } else {
-                        throw new PackageException(sprintf('Package class "%s" must implements "%s" interface', $packageClass, PackageInterface::class));
                     }
+
+                    throw new PackageException(sprintf('Package class "%s" must implements "%s" interface', $packageClass, PackageInterface::class));
                 }
 
                 // Create instance of package and call register method
