@@ -24,15 +24,6 @@ use Berlioz\Core\CoreAwareInterface;
 interface PackageInterface extends CoreAwareInterface
 {
     /**
-     * Get default config filename of package.
-     *
-     * Must return null if no default config file.
-     *
-     * @return string|null
-     */
-    //public static function getDefaultConfigFilename(): ?string;
-
-    /**
      * Register package.
      *
      * Method called for the registration of all packages.
