@@ -110,23 +110,23 @@ class TimeLine extends AbstractSection implements \Countable
     {
         usort(
             $activities,
-            function ($a, $b) use ($orderBy) {
+            function ($activityA, $activityB) use ($orderBy) {
                 /**
-                 * @var \Berlioz\Core\Debug\Activity $a
-                 * @var \Berlioz\Core\Debug\Activity $b
+                 * @var \Berlioz\Core\Debug\Activity $activityA
+                 * @var \Berlioz\Core\Debug\Activity $activityB
                  */
                 switch ($orderBy) {
                     case 'duration':
-                        $aTime = $a->duration();
-                        $bTime = $b->duration();
+                        $aTime = $activityA->duration();
+                        $bTime = $activityB->duration();
                         break;
                     case 'end':
-                        $aTime = $a->getEndMicroTime();
-                        $bTime = $b->getEndMicroTime();
+                        $aTime = $activityA->getEndMicroTime();
+                        $bTime = $activityB->getEndMicroTime();
                         break;
                     default:
-                        $aTime = $a->getStartMicroTime();
-                        $bTime = $b->getStartMicroTime();
+                        $aTime = $activityA->getStartMicroTime();
+                        $bTime = $activityB->getStartMicroTime();
                 }
 
                 return $aTime == $bTime ? 0 : (($aTime < $bTime) ? -1 : 1);
