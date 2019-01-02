@@ -44,10 +44,10 @@ class DefaultDirectories implements DirectoriesInterface
         if (is_null($this->workingDirectory)) {
             // Get document root from server configuration
             if (getenv('DOCUMENT_ROOT') !== false) {
-                $this->workingDirectory = rtrim(getenv('DOCUMENT_ROOT'), '\\/');
-            } else {
-                $this->workingDirectory = getcwd() ?: __DIR__;
+                return $this->workingDirectory = rtrim(getenv('DOCUMENT_ROOT'), '\\/');
             }
+
+            return $this->workingDirectory = getcwd() ?: __DIR__;
         }
 
         return $this->workingDirectory;
