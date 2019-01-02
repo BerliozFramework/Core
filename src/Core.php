@@ -79,7 +79,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         // Debug
         $this->getDebug()->getTimeLine()->addActivity($berliozActivity = (new Debug\Activity('Start', 'Berlioz'))->start());
 
-        //var_dump('CONSTRUCTOR');
         $this->directories = $directories;
         $this->cache = new CacheManager($this->getDirectories());
 
@@ -168,8 +167,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
             return;
         }
 
-        //var_dump('INIT BERLIOZ');
-
         $this->initialized = true;
 
         // Add default services to container
@@ -202,7 +199,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      */
     protected function toCache(): array
     {
-        //var_dump('TO CACHE');
         return ['config'           => $this->config,
                 'locale'           => $this->locale,
                 'directories'      => $this->directories,
@@ -339,7 +335,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         if (!is_null($this->serviceContainer)) {
             return $this->serviceContainer;
         }
-        //var_dump('SERVICE CONTAINER');
 
         try {
             $serviceContainerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
@@ -420,7 +415,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         if ($this->loadedFromCache) {
             return;
         }
-        //var_dump('PACKAGES REGISTER');
 
         $packagesActivity = (new Debug\Activity('Packages (registration)', 'Berlioz'))->start();
 
@@ -479,7 +473,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      */
     protected function initPackages()
     {
-        //var_dump('PACKAGES INIT');
         $packagesActivity = (new Debug\Activity('Packages (initialization)', 'Berlioz'))->start();
 
         foreach ($this->packages as $packageClass => $package) {
