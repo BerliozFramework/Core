@@ -28,8 +28,6 @@ class Composer implements \Serializable, CoreAwareInterface
     private $composerLock;
     /** @var array Packages */
     private $packages;
-    /** @var array Berlioz packages */
-    private $berliozPackages;
 
     /**
      * Composer constructor.
