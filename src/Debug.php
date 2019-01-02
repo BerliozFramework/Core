@@ -129,19 +129,19 @@ class Debug implements CoreAwareInterface, \Serializable
                 }
 
                 // Get ip
-                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+                $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
 
-                if (is_null($ip)) {
+                if (is_null($ipAddress)) {
                     return $this->enabled = false;
                 }
 
                 // Find ip
-                if (in_array($ip, $debug)) {
+                if (in_array($ipAddress, $debug)) {
                     return $this->enabled = true;
                 }
 
                 // Find host
-                if (in_array(gethostbyaddr($ip), $debug)) {
+                if (in_array(gethostbyaddr($ipAddress), $debug)) {
                     return $this->enabled = true;
                 }
 
@@ -149,9 +149,9 @@ class Debug implements CoreAwareInterface, \Serializable
             } catch (\Throwable $e) {
                 return false;
             }
-        } else {
-            return $this->enabled;
         }
+
+        return $this->enabled;
     }
 
     /**
