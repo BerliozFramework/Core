@@ -185,7 +185,11 @@ class CacheManager implements CacheInterface
                     DIRECTORY_SEPARATOR .
                     'berlioz';
 
-        return $this->rmdir($cacheDir);
+        if (is_dir($cacheDir)) {
+            return $this->rmdir($cacheDir);
+        }
+
+        return true;
     }
 
     /**
