@@ -55,21 +55,40 @@ class EntryPoints extends JsonAsset
     /**
      * Get asset for given entry name and file type.
      *
-     * @param string $entry
-     * @param string $fileType
+     * @param string      $entry
+     * @param string|null $type
      *
      * @return array
      */
-    public function get(string $entry, string $fileType): array
+    public function get(string $entry, ?string $type = null): array
     {
-        if (!isset($this->assets[$entry][$fileType])) {
+        if (!isset($this->assets[$entry])) {
             return [];
         }
 
-        if (is_array($assets = $this->assets[$entry][$fileType])) {
+        if (is_null($type)) {
+            $assets = $this->assets[$entry];
+
+            array_walk($assets,
+                function (&$value) {
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
+                });
+
             return $assets;
         }
 
-        return [$assets];
+        if (!isset($this->assets[$entry][$type])) {
+            return [];
+        }
+
+        $assets = $this->assets[$entry][$type];
+
+        if (!is_array($assets)) {
+            $assets = [$assets];
+        }
+
+        return $assets;
     }
 }
