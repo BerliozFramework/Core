@@ -20,7 +20,12 @@ class EntryPointsTest extends TestCase
 {
     public function testTarget()
     {
-        $this->assertInstanceOf(EntryPoints::class, new EntryPoints(__DIR__ . '/../_files/entrypoints.target.json', 'entrypoints'));
+        $entryPoints = new EntryPoints(__DIR__ . '/../_files/entrypoints.target.json', 'entrypoints');
+        $this->assertInstanceOf(EntryPoints::class, $entryPoints);
+        $this->assertEquals(['/assets/js/test.12345678.js',
+                             '/assets/js/test2.12345678.js',
+                             '/assets/js/vendor.12345678.js'],
+                            $entryPoints->get('test', 'js'));
     }
 
     public function testBadTarget()
@@ -37,6 +42,11 @@ class EntryPointsTest extends TestCase
                              '/assets/js/test2.12345678.js',
                              '/assets/js/vendor.12345678.js'],
                             $entryPoints->get('test', 'js'));
+        $this->assertEquals(['js'  => ['/assets/js/test.12345678.js',
+                                       '/assets/js/test2.12345678.js',
+                                       '/assets/js/vendor.12345678.js'],
+                             'css' => ['/assets/css/test.12345678.css']],
+                            $entryPoints->get('test'));
         $this->assertEquals([], $entryPoints->get('foo', 'js'));
         $this->assertEquals([], $entryPoints->get('test', 'bar'));
     }
