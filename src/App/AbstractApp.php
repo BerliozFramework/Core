@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\App;
 
+use Berlioz\Core\Asset\Assets;
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
 use Berlioz\Core\CoreAwareTrait;
@@ -66,5 +67,16 @@ abstract class AbstractApp implements CoreAwareInterface
     public function getService(string $id)
     {
         return $this->getCore()->getServiceContainer()->get($id);
+    }
+
+    /**
+     * Get assets.
+     *
+     * @return \Berlioz\Core\Asset\Assets
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    public function getAssets(): Assets
+    {
+        return $this->getService(Assets::class);
     }
 }

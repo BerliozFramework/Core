@@ -8,8 +8,14 @@
       "log": "%berlioz.directories.var%/log",
       "tmp": "%berlioz.directories.var%/tmp",
       "vendor": "%berlioz.directories.app%/vendor"
+    },
+    "assets": {
+      "manifest": "%berlioz.directories.app%/assets/manifest.json",
+      "entrypoints": "%berlioz.directories.app%/assets/entrypoints.json",
+      "entrypoints_target": null
     }
   },
   "services": {
+    "assets": "Berlioz\\Core\\Asset\\Assets"
   }
 }

@@ -54,12 +54,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/ServiceContainer.git",
-                "reference": "8db51868f3814a19fd6820efc8d9eb825aa3c3e2"
+                "reference": "84a751fe98dc5ec300f789952f7ac08a88cfc282"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/ServiceContainer/zipball/8db51868f3814a19fd6820efc8d9eb825aa3c3e2",
-                "reference": "8db51868f3814a19fd6820efc8d9eb825aa3c3e2",
+                "url": "https://api.github.com/repos/BerliozFramework/ServiceContainer/zipball/84a751fe98dc5ec300f789952f7ac08a88cfc282",
+                "reference": "84a751fe98dc5ec300f789952f7ac08a88cfc282",
                 "shasum": ""
             },
             "require": {
@@ -91,7 +91,7 @@
             ],
             "description": "Berlioz Service Container",
             "homepage": "http://getberlioz.com",
-            "time": "2018-12-28T16:09:08+00:00"
+            "time": "2018-12-28T17:33:07+00:00"
         },
         {
             "name": "berlioz/utils",
@@ -962,16 +962,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "7.5.1",
+            "version": "7.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "c23d78776ad415d5506e0679723cb461d71f488f"
+                "reference": "7c89093bd00f7d5ddf0ab81dee04f801416b4944"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c23d78776ad415d5506e0679723cb461d71f488f",
-                "reference": "c23d78776ad415d5506e0679723cb461d71f488f",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/7c89093bd00f7d5ddf0ab81dee04f801416b4944",
+                "reference": "7c89093bd00f7d5ddf0ab81dee04f801416b4944",
                 "shasum": ""
             },
             "require": {
@@ -1042,7 +1042,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2018-12-12T07:20:32+00:00"
+            "time": "2019-01-15T08:19:08+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
