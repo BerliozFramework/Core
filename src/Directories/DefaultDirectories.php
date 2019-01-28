@@ -27,6 +27,8 @@ class DefaultDirectories implements DirectoriesInterface
     protected $appDirectory;
     /** @var string Config directory */
     protected $configDirectory;
+    /** @var string Var directory */
+    protected $varDirectory;
     /** @var string Cache directory */
     protected $cacheDirectory;
     /** @var string Log directory */
@@ -107,11 +109,11 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getVarDir(): string
     {
-        if (is_null($this->cacheDirectory)) {
-            $this->cacheDirectory = $this->getAppDir() . DIRECTORY_SEPARATOR . 'var';
+        if (is_null($this->varDirectory)) {
+            $this->varDirectory = $this->getAppDir() . DIRECTORY_SEPARATOR . 'var';
         }
 
-        return $this->cacheDirectory;
+        return $this->varDirectory;
     }
 
     /**
