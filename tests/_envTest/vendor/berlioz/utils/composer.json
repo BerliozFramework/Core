@@ -1,0 +1,39 @@
+{
+  "name": "berlioz/utils",
+  "description": "Additional functions for PHP",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "homepage": "http://www.berlioz-framework.com",
+  "authors": [
+    {
+      "name": "Ronan Giron",
+      "email": "ronan.giron@berlioz-framework.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Berlioz\\Utils\\": "src/"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Berlioz\\Utils\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": ">=7.1",
+    "ext-gd": "*",
+    "ext-iconv": "*",
+    "ext-intl": "*",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.4"
+  },
+  "suggest": {
+    "ext-gd": "*"
+  }
+}
