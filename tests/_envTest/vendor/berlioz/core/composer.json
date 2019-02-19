@@ -14,19 +14,13 @@
   "autoload": {
     "psr-4": {
       "Berlioz\\Core\\": "src/"
-    },
-    "exclude-from-classmap": [
-      "/tests/"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {
       "Berlioz\\Core\\Tests\\": "tests/",
-      "Berlioz\\Core\\TestProject\\": "tests/_envTest/src/"
-    },
-    "exclude-from-classmap": [
-      "/tests/_envTest/"
-    ]
+      "Berlioz\\Core\\TestProject\\": "tests/_envTest/"
+    }
   },
   "require": {
     "php": "^7.1",
