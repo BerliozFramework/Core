@@ -234,7 +234,7 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      */
     public function serialize()
     {
-        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', __CLASS__));
+        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', self::class));
     }
 
     /**
@@ -243,7 +243,7 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      */
     public function unserialize($serialized)
     {
-        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', __CLASS__));
+        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', self::class));
     }
 
     //////////////
