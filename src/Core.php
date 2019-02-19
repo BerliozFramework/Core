@@ -16,6 +16,7 @@ namespace Berlioz\Core;
 
 use Berlioz\Core\Cache\CacheManager;
 use Berlioz\Core\Directories\DefaultDirectories;
+use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Exception\CacheException;
 use Berlioz\Core\Exception\ConfigException;
@@ -175,8 +176,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
 
         // Packages
         $this->registerPackages();
-
-        // Packages
         $this->initPackages();
     }
 
@@ -293,7 +292,7 @@ class Core implements ServiceContainerAwareInterface, \Serializable
             $config = new Config(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'resources', 'config.default.json']), true);
 
             // Init default configuration
-            //$config->setVariable('berlioz.directories.working', $this->getDirectories()->getWorkingDir());
+            $config->setVariable('berlioz.directories.working', $this->getDirectories()->getWorkingDir());
             $config->setVariable('berlioz.directories.app', $this->getDirectories()->getAppDir());
             $config->setVariable('berlioz.directories.config', $this->getDirectories()->getConfigDir());
             $config->setVariable('berlioz.directories.cache', $this->getDirectories()->getCacheDir());
@@ -390,11 +389,12 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      * Get composer.
      *
      * @return \Berlioz\Core\Composer
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getComposer(): Composer
     {
         if (is_null($this->composer)) {
-            $this->composer = new Composer($this);
+            $this->composer = new Composer($this->getDirectories()->getAppDir() . DIRECTORY_SEPARATOR . 'composer.json');
         }
 
         return $this->composer;
@@ -420,23 +420,18 @@ class Core implements ServiceContainerAwareInterface, \Serializable
 
         // Get packages from PHP file
         try {
-            // Get packages from config
-            $packagesClass = $this->getConfig()->get('packages', []);
+            $packagesName = $this->getComposer()->getPackagesName();
 
-            // Get packages from composer
-            foreach ($this->getComposer()->getPackages() as $composerPackage) {
-                $composerPackageJson = $this->getComposer()->getPackage($composerPackage);
+            // Load default configuration of packages
+            foreach ($packagesName as $packageName) {
+                $package = $this->getComposer()->getPackage($packageName);
 
-                if (!isset($composerPackageJson['config']['berlioz']['package'])) {
+                if (empty($package['config']['berlioz']['package'])) {
                     continue;
                 }
 
-                $packagesClass[] = (string) $composerPackageJson['config']['berlioz']['package'];
-            }
-            $packagesClass = array_unique($packagesClass);
+                $packageClass = $package['config']['berlioz']['package'];
 
-            // Load default configuration of packages
-            foreach ($packagesClass as $packageClass) {
                 if (!is_a($packageClass, PackageInterface::class, true)) {
                     if (!class_exists($packageClass)) {
                         throw new PackageException(sprintf('Package class "%s" does not exists', $packageClass));

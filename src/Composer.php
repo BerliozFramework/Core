@@ -14,17 +14,20 @@ declare(strict_types=1);
 
 namespace Berlioz\Core;
 
-use Berlioz\Core\Exception\BerliozException;
+use Berlioz\Core\Exception\ComposerException;
 
 /**
  * Class Composer.
  *
  * @package Berlioz\Core
  */
-class Composer implements \Serializable, CoreAwareInterface
+class Composer implements \Serializable
 {
-    use CoreAwareTrait;
-    /** @var array Composer lock */
+    /** @var string Composer JSON filename */
+    private $composerJsonFilename;
+    /** @var array Composer JSON */
+    private $composerJson;
+    /** @var array Composer Lock */
     private $composerLock;
     /** @var array Packages */
     private $packages;
@@ -32,11 +35,14 @@ class Composer implements \Serializable, CoreAwareInterface
     /**
      * Composer constructor.
      *
-     * @param \Berlioz\Core\Core $core
+     * @param string $composerJsonFilename
+     *
+     * @throws \Berlioz\Core\Exception\ComposerException
      */
-    public function __construct(Core $core)
+    public function __construct(string $composerJsonFilename)
     {
-        $this->setCore($core);
+        $this->composerJsonFilename = $composerJsonFilename;
+        $this->init();
     }
 
     /////////////////////
@@ -48,7 +54,10 @@ class Composer implements \Serializable, CoreAwareInterface
      */
     public function serialize()
     {
-        return serialize(['composerLock' => $this->composerLock]);
+        return serialize(['composerJsonFilename' => $this->composerJsonFilename,
+                          'composerJson'         => $this->composerJson,
+                          'composerLock'         => $this->composerLock,
+                          'packages'             => $this->packages]);
     }
 
     /**
@@ -58,7 +67,45 @@ class Composer implements \Serializable, CoreAwareInterface
     {
         $unserialized = unserialize($serialized);
 
-        $this->composerLock = $unserialized['composerLock'] ?? null;
+        $this->composerJsonFilename = $unserialized['composerJsonFilename'];
+        $this->composerJson = $unserialized['composerJson'];
+        $this->composerLock = $unserialized['composerLock'];
+        $this->packages = $unserialized['packages'];
+    }
+
+    //////////////////////
+    /// INITIALIZATION ///
+    //////////////////////
+
+    /**
+     * @throws \Berlioz\Core\Exception\ComposerException
+     */
+    private function init()
+    {
+        // Load composer.json
+        $this->composerJson = $this->loadJsonFile($this->composerJsonFilename);
+
+        // Reconstitute the composer.lock filename
+        $composerLockFilename = dirname($this->composerJsonFilename) .
+                                DIRECTORY_SEPARATOR .
+                                basename($this->composerJsonFilename, '.json') .
+                                '.lock';
+
+        // Check if composer.lock file exists
+        if (!file_exists($composerLockFilename)) {
+            throw new ComposerException(sprintf('Project is not initialized with Composer, "%s" file doest not exists', $composerLockFilename));
+        }
+
+        // Get JSON content of composer.json file
+        if (($this->composerLock = json_decode(file_get_contents($composerLockFilename), true)) === false) {
+            throw new ComposerException(sprintf('"%s" file of project is corrupted or not readable', $composerLockFilename));
+        }
+
+        // Reindex packages
+        $this->composerLock['packages'] = array_column($this->composerLock['packages'], null, 'name');
+
+        // Load packages
+        $this->packages = array_fill_keys(array_column($this->composerLock['packages'], 'name'), null);
     }
 
     ///////////////
@@ -66,54 +113,84 @@ class Composer implements \Serializable, CoreAwareInterface
     ///////////////
 
     /**
-     * Load composer.lock file content.
+     * Load package JSON.
      *
-     * @throws \Berlioz\Core\Exception\BerliozException
-     */
-    private function load()
-    {
-        if (!$this->isLoaded()) {
-            $composerLockFile = implode(DIRECTORY_SEPARATOR, [$this->getCore()->getDirectories()->getAppDir(), 'composer.lock']);
-
-            // Check if composer.lock file is present
-            if (!file_exists($composerLockFile)) {
-                throw new BerliozException('Project is not initialized with Composer');
-            }
-
-            // Get JSON content of composer.lock file
-            if (($this->composerLock = json_decode(file_get_contents($composerLockFile), true)) === false) {
-                throw new BerliozException('composer.lock file of project is corrupted or not readable');
-            }
-
-            $this->packages = array_column($this->composerLock['packages'], null, 'name');
-        }
-    }
-
-    /**
-     * Is loaded?
-     *
-     * @return bool
-     */
-    private function isLoaded(): bool
-    {
-        return !is_null($this->composerLock);
-    }
-
-    ////////////////
-    /// PACKAGES ///
-    ////////////////
-
-    /**
-     * Get packages.
+     * @param string $packageName
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Berlioz\Core\Exception\ComposerException
      */
-    public function getPackages(): array
+    private function loadPackageJson(string $packageName): array
     {
-        $this->load();
+        // Get target directories
+        $targetDirs = array_column($this->composerLock['packages'], 'target-dir', 'name');
 
-        return array_column($this->packages, 'name');
+        // Get package directory and composer.json path
+        $packageDirectory = dirname($this->composerJsonFilename) .
+                            DIRECTORY_SEPARATOR .
+                            ($this->composerJson['config']['vendor-dir'] ?? 'vendor') .
+                            DIRECTORY_SEPARATOR .
+                            str_replace('/', DIRECTORY_SEPARATOR, $packageName) .
+                            DIRECTORY_SEPARATOR .
+                            str_replace('/', DIRECTORY_SEPARATOR, $targetDirs[$packageName] ?? '');
+        $packageDirectory = rtrim($packageDirectory, DIRECTORY_SEPARATOR);
+        $composerFile = $packageDirectory . DIRECTORY_SEPARATOR . 'composer.json';
+
+        if (!is_dir($packageDirectory)) {
+            throw new ComposerException(sprintf('Unable to find directory of package "%s"', $packageName));
+        }
+
+        if (!file_exists($composerFile)) {
+            throw new ComposerException(sprintf('Unable to find composer.json file of package "%s"', $packageName));
+        }
+
+        return $this->loadJsonFile($composerFile);
+    }
+
+    /**
+     * Load a JSON file content.
+     *
+     * @param string $jsonFile JSON file
+     *
+     * @return array
+     * @throws \Berlioz\Core\Exception\ComposerException
+     */
+    private function loadJsonFile(string $jsonFile): array
+    {
+        if (!file_exists($jsonFile)) {
+            throw new ComposerException(sprintf('Unable to find "%s" JSON file', $jsonFile));
+        }
+
+        // Get JSON content of composer.json file
+        if (($json = json_decode(file_get_contents($jsonFile), true)) === false) {
+            throw new ComposerException(sprintf('"%s" JSON file is corrupted or not readable', $jsonFile));
+        }
+
+        return $json;
+    }
+
+    ///////////////
+    /// GETTERS ///
+    ///////////////
+
+    /**
+     * Get project composer.
+     *
+     * @return array
+     */
+    public function getProjectComposer(): array
+    {
+        return $this->composerJson;
+    }
+
+    /**
+     * Get packages name.
+     *
+     * @return array
+     */
+    public function getPackagesName(): array
+    {
+        return array_keys($this->packages);
     }
 
     /**
@@ -122,70 +199,51 @@ class Composer implements \Serializable, CoreAwareInterface
      * @param string $name
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Berlioz\Core\Exception\ComposerException
      */
     public function getPackage(string $name): array
     {
-        $this->load();
-
-        if (!isset($this->packages[$name])) {
-            throw new BerliozException(sprintf('Unable to found "%s" composer package', $name));
-        }
-        $package = $this->packages[$name];
-
-        // Get package directory and composer.json path
-        $packageDirectory = $this->getCore()->getDirectories()->getVendorDir() .
-                            DIRECTORY_SEPARATOR .
-                            str_replace('/', DIRECTORY_SEPARATOR, $name) .
-                            DIRECTORY_SEPARATOR .
-                            str_replace('/', DIRECTORY_SEPARATOR, $package['target-dir'] ?? '');
-        $packageDirectory = rtrim($packageDirectory, DIRECTORY_SEPARATOR);
-        $composerFile = $packageDirectory . DIRECTORY_SEPARATOR . 'composer.json';
-
-        if (!is_dir($packageDirectory)) {
-            throw new BerliozException(sprintf('Unable to find directory of package "%s"', $name));
+        if (!array_key_exists($name, $this->packages)) {
+            throw new ComposerException(sprintf('Unable to found "%s" composer package', $name));
         }
 
-        if (!file_exists($composerFile)) {
-            throw new BerliozException(sprintf('Unable to find composer.json file of package "%s"', $name));
+        if (is_null($this->packages[$name])) {
+            $this->packages[$name] = $this->loadPackageJson($name);
         }
 
-        // Get JSON content of composer.lock file
-        if (($composerJson = json_decode(file_get_contents($composerFile), true)) === false) {
-            throw new BerliozException('composer.lock file of project is corrupted or not readable');
-        }
-
-        return $composerJson;
+        return $this->packages[$name];
     }
 
     /**
-     * Get Berlioz packages.
+     * Get package version installed.
+     *
+     * @param string $name
+     *
+     * @return string|null|false
+     */
+    public function getPackageVersion(string $name)
+    {
+        if (array_key_exists($name, $this->composerLock['packages'])) {
+            return $this->composerLock['packages'][$name]['version'] ?? null;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get packages.
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Berlioz\Core\Exception\ComposerException
      */
-    public function getBerliozPackages(): array
+    public function getPackages(): array
     {
-        $this->load();
+        foreach ($this->packages as $name => &$package) {
+            if (is_null($package)) {
+                $package = $this->loadPackageJson($name);
+            }
+        }
 
-        $berliozPackages =
-            array_filter($this->packages,
-                function ($value) {
-                    if (!isset($value['type'])) {
-                        return false;
-                    }
-
-                    if ($value['type'] == "berlioz-package") {
-                        return true;
-                    }
-
-                    if (isset($value['config']['berlioz'])) {
-                        return true;
-                    }
-
-                    return false;
-                });
-
-        return array_column($berliozPackages, 'name');
+        return $this->packages;
     }
 }
