@@ -535,10 +535,10 @@ class Core implements ServiceContainerAwareInterface, \Serializable
     /**
      * Get directories.
      *
-     * @return \Berlioz\Core\Directories\DefaultDirectories
+     * @return \Berlioz\Core\Directories\DirectoriesInterface
      * @throws \Berlioz\Core\Exception\BerliozException
      */
-    public function getDirectories(): DefaultDirectories
+    public function getDirectories(): DirectoriesInterface
     {
         if (is_null($this->directories)) {
             // Debug
