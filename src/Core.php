@@ -200,7 +200,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
     {
         return ['config'           => $this->config,
                 'locale'           => $this->locale,
-                'directories'      => $this->directories,
                 'serviceContainer' => $this->serviceContainer,
                 'packages'         => $this->packages];
     }
@@ -213,7 +212,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         $this->loadedFromCache = true;
         $this->config = $cache['config'];
         $this->locale = $cache['locale'];
-        $this->directories = $cache['directories'];
         $this->serviceContainer = $cache['serviceContainer'];
         $this->packages = $cache['packages'];
 
