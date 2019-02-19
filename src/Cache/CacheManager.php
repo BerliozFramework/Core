@@ -26,6 +26,7 @@ use Psr\SimpleCache\CacheInterface;
  */
 class CacheManager implements CacheInterface
 {
+    const CACHE_DIRECTORY = 'berlioz';
     /** @var \Berlioz\Core\Directories\DirectoriesInterface */
     private $directories;
 
@@ -48,9 +49,30 @@ class CacheManager implements CacheInterface
      */
     private function controlKey($key)
     {
-        if (!is_scalar($key) || $key === '') {
-            throw new InvalidArgumentCacheException(sprintf('Invalid key name "%s" for cache', $key));
+        if (!(is_string($key) && $key !== '')) {
+            throw new InvalidArgumentCacheException(sprintf('Invalid key name for cache'));
         }
+    }
+
+    /**
+     * Is valid TTL?
+     *
+     * @param mixed $ttl
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    private function isValidTtl($ttl): bool
+    {
+        if (is_null($ttl)) {
+            return true;
+        }
+
+        if ($ttl instanceof \DateTime && $ttl > new \DateTime('now')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -66,7 +88,7 @@ class CacheManager implements CacheInterface
 
         return $this->directories->getCacheDir() .
                DIRECTORY_SEPARATOR .
-               'berlioz' .
+               static::CACHE_DIRECTORY .
                DIRECTORY_SEPARATOR .
                substr($name, 0, 2) .
                DIRECTORY_SEPARATOR .
@@ -96,8 +118,7 @@ class CacheManager implements CacheInterface
         }
 
         try {
-            if (is_null($unserialized['ttl'])
-                || ($unserialized['ttl'] instanceof \DateTime && $unserialized['ttl'] > new \DateTime('now'))) {
+            if ($this->isValidTtl($unserialized['ttl'])) {
                 if (($unserializedData = @unserialize($unserialized['data'] ?? null)) === false) {
                     throw new CacheException(sprintf('Corrupted data for key "%s" from cache "%s"', $key, $cacheFilename));
                 }
@@ -183,7 +204,7 @@ class CacheManager implements CacheInterface
     {
         $cacheDir = $this->directories->getCacheDir() .
                     DIRECTORY_SEPARATOR .
-                    'berlioz';
+                    static::CACHE_DIRECTORY;
 
         if (is_dir($cacheDir)) {
             return $this->rmdir($cacheDir);
@@ -300,9 +321,6 @@ class CacheManager implements CacheInterface
      */
     public function has($key)
     {
-        $this->controlKey($key);
-        $cacheFilename = $this->getFilename($key);
-
-        return file_exists($cacheFilename);
+        return $this->get($key, $this) !== $this;
     }
 }

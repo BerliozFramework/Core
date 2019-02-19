@@ -1,4 +1,6 @@
 /vendor/
+/tests/_envTest/var/
+!**/.gitkeep
 
 # Dev environment
 .idea
