@@ -13,55 +13,151 @@
 namespace Berlioz\Core\Tests\Cache;
 
 use Berlioz\Core\Cache\CacheManager;
+use Berlioz\Core\Directories\DefaultDirectories;
+use Berlioz\Core\Directories\DirectoriesInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\SimpleCache\CacheException;
 
 class CacheManagerTest extends TestCase
 {
-    public function testHas()
+    private $directories;
+    private $cacheManager;
+
+    protected function setUp()
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->directories = new DefaultDirectories();
+        $this->cacheManager = new CacheManager($this->directories);
     }
 
-    public function testSetMultiple()
+    protected function getDirectories(): DirectoriesInterface
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        return $this->directories;
     }
 
-    public function testDeleteMultiple()
+    protected function getCacheManager(): CacheManager
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        return $this->cacheManager;
     }
 
-    public function testSet()
+    public function providerSet()
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        return [['key', 'value', true],
+                ['key-key', new \stdClass(), true],
+                [['array'], 'value', false],
+                [new \stdClass(), 'value', false],
+                ['', 'value', false]];
     }
 
-    public function testGet()
+    public function provider()
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        return [['key', 'value', null],
+                ['key2', new \stdClass(), null],
+                ['key3', 1, 2],
+                ['key4', ['array'], null],
+                ['key5', 'value', null],
+                ['key6', 'value', null],
+                ['key7', 'value', null]];
     }
 
-    public function testGetMultiple()
+    public function providerMultiple()
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        return [[['key'  => 'value',
+                  'key2' => new \stdClass(),
+                  'key3' => 1],
+                 null],
+
+                [['key4' => ['array'],
+                  'key5' => 'value',
+                  'key6' => 'value'],
+                 null],
+
+                [['key7' => 'value'],
+                 null]];
     }
 
-    public function testDelete()
+    /**
+     * @dataProvider providerSet
+     */
+    public function testSet($key, $value, $valid)
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        if (!$valid) {
+            $this->expectException(CacheException::class);
+        }
+
+        $this->getCacheManager()->set($key, $value, 0);
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @dataProvider provider
+     */
+    public function testGet($key, $value, $ttl)
+    {
+        $this->getCacheManager()->set($key, $value, $ttl);
+        $this->assertEquals($value, $this->getCacheManager()->get($key));
+
+        if (!is_null($ttl)) {
+            sleep($ttl);
+            $this->assertNull($this->getCacheManager()->get($key));
+            $this->assertEquals('test', $this->getCacheManager()->get($key, 'test'));
+        }
+    }
+
+    /**
+     * @dataProvider provider
+     */
+    public function testHas($key, $value, $ttl)
+    {
+        if (is_null($ttl)) {
+            $this->assertTrue($this->getCacheManager()->has($key));
+        } else {
+            $this->assertFalse($this->getCacheManager()->has($key));
+        }
+    }
+
+    /**
+     * @dataProvider provider
+     */
+    public function testDelete($key, $value, $ttl)
+    {
+        $this->assertTrue($this->getCacheManager()->delete($key));
+        $this->assertFalse($this->getCacheManager()->has($key));
+    }
+
+    /**
+     * @dataProvider providerMultiple
+     */
+    public function testSetMultiple($dataSet, $ttl)
+    {
+        $this->assertTrue($this->getCacheManager()->setMultiple($dataSet, $ttl));
+    }
+
+    /**
+     * @dataProvider providerMultiple
+     */
+    public function testGetMultiple($dataSet)
+    {
+        $values = $this->getCacheManager()->getMultiple(array_keys($dataSet));
+        $this->assertEquals($dataSet, $values);
+    }
+
+    /**
+     * @dataProvider providerMultiple
+     */
+    public function testDeleteMultiple($dataSet)
+    {
+        $this->assertTrue($this->getCacheManager()->deleteMultiple(array_keys($dataSet)));
+        $values = $this->getCacheManager()->getMultiple(array_keys($dataSet));
+        $this->assertEquals([], array_filter($values));
     }
 
     public function testClear()
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $cacheDirectory = $this->getDirectories()->getCacheDir() . DIRECTORY_SEPARATOR . CacheManager::CACHE_DIRECTORY;
+
+        $this->assertTrue(is_dir($cacheDirectory));
+        $this->assertTrue($this->getCacheManager()->clear());
+        $this->assertFalse(is_dir($cacheDirectory));
     }
 }
