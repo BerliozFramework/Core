@@ -19,6 +19,7 @@ use Berlioz\Core\Core;
 use Berlioz\Core\Debug;
 use Berlioz\Core\Directories\DefaultDirectories;
 use Berlioz\Core\Directories\DirectoriesInterface;
+use Berlioz\Core\Exception\BerliozException;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
 
@@ -27,27 +28,22 @@ class CoreTest extends TestCase
     public function provider()
     {
         $directories = new DefaultDirectories();
-        $core = new Core($directories);
+        $core = new Core($directories, true);
+        $core2 = new Core($directories, false);
 
-        return [[$core, $directories]];
+        return [[$core, $directories], [$core2, $directories]];
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function test__construct(Core $core)
+    public function test__construct()
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
-    }
+        $directories = new DefaultDirectories();
+        $core = new Core($directories, false);
+        $core2 = new Core($directories, true);
 
-    /**
-     * @dataProvider provider
-     */
-    public function test__destruct(Core $core)
-    {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->assertFalse($core->isCacheEnabled());
+        $this->assertTrue($core2->isCacheEnabled());
+        $this->assertEquals($directories, $core->getDirectories());
+        $this->assertEquals($directories, $core2->getDirectories());
     }
 
     /**
@@ -55,8 +51,8 @@ class CoreTest extends TestCase
      */
     public function testSerialize(Core $core)
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->expectException(BerliozException::class);
+        $core->serialize();
     }
 
     /**
@@ -64,8 +60,8 @@ class CoreTest extends TestCase
      */
     public function testUnserialize(Core $core)
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->expectException(BerliozException::class);
+        $core->unserialize('');
     }
 
     /**
@@ -73,7 +69,12 @@ class CoreTest extends TestCase
      */
     public function testGetCacheManager(Core $core)
     {
-        $this->assertInstanceOf(CacheInterface::class, $core->getCacheManager());
+        if ($core->isCacheEnabled()) {
+            $this->assertInstanceOf(CacheInterface::class, $core->getCacheManager());
+        }
+        if (!$core->isCacheEnabled()) {
+            $this->assertNull($core->getCacheManager());
+        }
     }
 
     /**
@@ -124,8 +125,7 @@ class CoreTest extends TestCase
      */
     public function testGetPackage(Core $core)
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->assertNull($core->getPackage('unknown'));
     }
 
     /**
@@ -134,7 +134,6 @@ class CoreTest extends TestCase
     public function testGetDirectories(Core $core, DirectoriesInterface $directories)
     {
         $this->assertInstanceOf(DirectoriesInterface::class, $core->getDirectories());
-        //var_dump('###############################', $directories, $core->getDirectories());
         $this->assertEquals($directories, $core->getDirectories());
     }
 
@@ -143,7 +142,23 @@ class CoreTest extends TestCase
      */
     public function testOnTerminate(Core $core)
     {
-        // @todo
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $foo = false;
+        $bar = false;
+        $core
+            ->onTerminate(function () use (&$foo) {
+                $foo = true;
+            })
+            ->onTerminate(function () use (&$bar) {
+                $bar = true;
+            });
+
+        // Reflection of core
+        $reflectionCore = new \ReflectionObject($core);
+        $reflectionTerminateMethod = $reflectionCore->getMethod('terminate');
+        $reflectionTerminateMethod->setAccessible(true);
+        $reflectionTerminateMethod->invoke($core);
+
+        $this->assertTrue($foo);
+        $this->assertTrue($bar);
     }
 }
