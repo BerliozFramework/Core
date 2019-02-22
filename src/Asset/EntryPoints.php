@@ -41,7 +41,7 @@ class EntryPoints extends JsonAsset
 
         if (!empty($this->target)) {
             try {
-                if (is_null($this->assets = b_array_traverse($this->assets, explode('.', $this->target)))) {
+                if (is_null($this->assets = b_array_traverse_get($this->assets,$this->target))) {
                     throw new AssetException(sprintf('Key "%s" to target entry points is invalid', $this->target));
                 }
             } catch (AssetException $e) {
