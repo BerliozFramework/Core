@@ -1,6 +1,7 @@
 /vendor/
 /tests/_envTest/var/
 !**/.gitkeep
+composer.lock
 
 # Dev environment
 .idea
