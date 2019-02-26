@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
+use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
 
 /**
@@ -21,24 +22,36 @@ use Berlioz\Core\CoreAwareInterface;
  *
  * @package Berlioz\Core\Package
  */
-interface PackageInterface extends CoreAwareInterface
+interface PackageInterface extends CoreAwareInterface, \Serializable
 {
+    /**
+     * Package configuration.
+     *
+     * Method called for the configuration of package.
+     * Do not use this method to do any actions on framework, only configuration of package.
+     *
+     * @return \Berlioz\Config\ConfigInterface|array|string|null
+     */
+    public static function config();
+
     /**
      * Register package.
      *
-     * Method called for the registration of all packages.
-     * Do not use this method to do any actions on framework, only configuration and registration of services.
+     * Method called for the registration of services associated to the package.
+     * Do not use this method to do any actions on framework, only registration of services.
      *
-     * @return mixed
+     * @param \Berlioz\Core\Core $core
+     *
+     * @return void
      */
-    public function register();
+    public static function register(Core $core): void;
 
     /**
      * Init package.
      *
      * Method called after creation of all packages.
      *
-     * @return mixed
+     * @return void
      */
-    public function init();
+    public function init(): void;
 }

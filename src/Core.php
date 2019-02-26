@@ -14,20 +14,20 @@ declare(strict_types=1);
 
 namespace Berlioz\Core;
 
+use Berlioz\Config\ConfigInterface;
+use Berlioz\Config\ExtendedJsonConfig;
 use Berlioz\Core\Cache\CacheManager;
 use Berlioz\Core\Directories\DefaultDirectories;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
-use Berlioz\Core\Exception\CacheException;
-use Berlioz\Core\Exception\ConfigException;
 use Berlioz\Core\Exception\ContainerException;
-use Berlioz\Core\Exception\PackageException;
-use Berlioz\Core\Package\PackageInterface;
+use Berlioz\Core\Package\PackageSet;
 use Berlioz\ServiceContainer\Service;
 use Berlioz\ServiceContainer\ServiceContainer;
 use Berlioz\ServiceContainer\ServiceContainerAwareInterface;
 use Berlioz\ServiceContainer\ServiceContainerAwareTrait;
 use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Class Core.
@@ -37,22 +37,18 @@ use Psr\SimpleCache\CacheInterface;
 class Core implements ServiceContainerAwareInterface, \Serializable
 {
     use ServiceContainerAwareTrait;
-    /** @var bool Initialized? */
-    private $initialized = false;
-    /** @var bool Loaded from cache? */
-    private $loadedFromCache = false;
     /** @var \Berlioz\Core\Composer */
-    private $composer;
+    protected $composer;
     /** @var \Psr\SimpleCache\CacheInterface|null */
     protected $cache;
     /** @var \Berlioz\Core\Debug */
     protected $debug;
-    /** @var \Berlioz\Core\Config Configuration */
+    /** @var \Berlioz\Config\ConfigInterface Configuration */
     protected $config;
-    /** @var \Berlioz\Core\Directories\DefaultDirectories DefaultDirectories */
+    /** @var \Berlioz\Core\Directories\DirectoriesInterface Directories */
     protected $directories;
-    /** @var \Berlioz\Core\Package\PackageInterface[] Packages */
-    protected $packages = [];
+    /** @var \Berlioz\Core\Package\PackageSet Packages */
+    protected $packages;
     /** @var string Locale */
     protected $locale;
     /** @var array Terminate callbacks */
@@ -61,13 +57,12 @@ class Core implements ServiceContainerAwareInterface, \Serializable
     /**
      * Core constructor.
      *
-     * @param \Berlioz\Core\Directories\DefaultDirectories|null $directories
-     * @param \Psr\SimpleCache\CacheInterface|bool              $cache
+     * @param \Berlioz\Core\Directories\DirectoriesInterface|null $directories
+     * @param \Psr\SimpleCache\CacheInterface|bool                $cache
      *
      * @throws \Berlioz\Core\Exception\BerliozException
-     * @throws \Berlioz\ServiceContainer\Exception\ContainerException
      */
-    public function __construct(?DefaultDirectories $directories = null, $cache = true)
+    public function __construct(?DirectoriesInterface $directories = null, $cache = true)
     {
         // Debug
         if ($_SERVER['REQUEST_TIME_FLOAT']) {
@@ -81,8 +76,10 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         // Debug
         $this->getDebug()->getTimeLine()->addActivity($berliozActivity = (new Debug\Activity('Start', 'Berlioz'))->start());
 
+        // Directories
         $this->directories = $directories;
 
+        // Cache manager
         if (is_bool($cache)) {
             if ($cache === true) {
                 $this->cache = new CacheManager($this->getDirectories());
@@ -92,32 +89,7 @@ class Core implements ServiceContainerAwareInterface, \Serializable
             $this->cache = $cache;
         }
 
-        // Load from cache
-        if (!is_null($this->getCacheManager())) {
-            $cacheActivity = (new Debug\Activity('Cache', 'Berlioz'))->start();
-
-            try {
-                if (!empty($coreCached = $this->getCacheManager()->get('berlioz-core'))) {
-                    $this->fromCache($coreCached);
-                }
-            } catch (\Psr\SimpleCache\CacheException $e) {
-            }
-
-            // Add callback to save cache
-            if (!$this->loadedFromCache) {
-                $this->onTerminate(function () {
-                    try {
-                        // Save to cache
-                        $this->getCacheManager()->set('berlioz-core', $this->toCache());
-                    } catch (\Psr\SimpleCache\CacheException $e) {
-                        throw new CacheException('Cache error', 0, $e);
-                    }
-                });
-            }
-
-            $this->getDebug()->getTimeLine()->addActivity($cacheActivity->end());
-        }
-
+        // Init framework
         $this->init();
 
         $berliozActivity->end();
@@ -133,27 +105,164 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         $this->terminate();
     }
 
+    /////////////
+    /// CACHE ///
+    /////////////
+
+    /**
+     * Get cache manager.
+     *
+     * @return \Psr\SimpleCache\CacheInterface|null
+     */
+    public function getCacheManager(): ?CacheInterface
+    {
+        return $this->cache;
+    }
+
+    /**
+     * Is cache enabled?
+     *
+     * @return bool
+     */
+    public function isCacheEnabled(): bool
+    {
+        return $this->cache instanceof CacheInterface;
+    }
+
+    /**
+     * Load Core from cache.
+     *
+     * @return bool Returns TRUE if Core loaded from cache
+     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    protected function loadCache(): bool
+    {
+        $cacheActivity = (new Debug\Activity('Cache (load)', 'Berlioz'))->start();
+
+        try {
+            // No cache manager?
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
+
+            // No data in cache?
+            if (empty($cache = $this->getCacheManager()->get('berlioz-core'))) {
+                return false;
+            }
+
+            $this->config = $cache['config'] ?? null;
+            $this->locale = $cache['locale'] ?? null;
+            $this->serviceContainer = $cache['serviceContainer'] ?? null;
+            $this->packages = $cache['packages'] ?? null;
+            $this->getPackages()->setCore($this);
+
+            return true;
+        } finally {
+            $this->getDebug()->getTimeLine()->addActivity($cacheActivity->end());
+        }
+    }
+
+    /**
+     * Save Core to cache.
+     *
+     * @return bool
+     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    protected function saveCache(): bool
+    {
+        $cacheActivity = (new Debug\Activity('Cache (saving)', 'Berlioz'))->start();
+
+        try {
+            // No cache manager?
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
+
+            return
+                $this->getCacheManager()
+                     ->set('berlioz-core',
+                           ['config'           => $this->config,
+                            'locale'           => $this->locale,
+                            'serviceContainer' => $this->serviceContainer,
+                            'packages'         => $this->packages]);
+        } finally {
+            $this->getDebug()->getTimeLine()->addActivity($cacheActivity->end());
+        }
+    }
+
+    /////////////////////
+    /// SERIALIZATION ///
+    /////////////////////
+
+    /**
+     * @inheritdoc
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    public function serialize()
+    {
+        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    public function unserialize($serialized)
+    {
+        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
+    }
+
+    ////////////////////////////////////
+    /// INITIALIZATION / TERMINATION ///
+    ////////////////////////////////////
+
     /**
      * Initialization.
      *
      * @throws \Berlioz\Core\Exception\BerliozException
-     * @throws \Berlioz\ServiceContainer\Exception\ContainerException
      */
-    private function init()
+    protected function init()
     {
-        if ($this->initialized) {
-            return;
+        try {
+            // Load from cache
+            try {
+                $fromCache = $this->loadCache();
+            } catch (\Throwable $e) {
+                $fromCache = false;
+            } catch (InvalidArgumentException $e) {
+                $fromCache = false;
+            }
+
+            // Not cached?
+            if (!$fromCache) {
+                // Init default configuration
+                $this->initConfig();
+
+                // Init service container
+                $this->initServiceContainer();
+
+                // Register packages (configuration & services)
+                $this->getPackages()->register();
+
+                // Event to save cache
+                $this->onTerminate(function () {
+                    if ($this->isCacheEnabled()) {
+                        $this->saveCache();
+                    }
+                });
+            }
+
+            // Add default services to container
+            $this->getServiceContainer()->add(new Service($this, 'berlioz'));
+            $this->getServiceContainer()->add(new Service($this->getConfig(), 'config'));
+
+            // Packages
+            $this->getPackages()->init();
+        } catch (\Throwable $e) {
+            throw new BerliozException('Initialization error', 0, $e);
         }
-
-        $this->initialized = true;
-
-        // Add default services to container
-        $this->getServiceContainer()->add(new Service($this, 'berlioz'));
-        $this->getServiceContainer()->add(new Service($this->getConfig(), 'config'));
-
-        // Packages
-        $this->registerPackages();
-        $this->initPackages();
     }
 
     /**
@@ -194,83 +303,6 @@ class Core implements ServiceContainerAwareInterface, \Serializable
         return $this;
     }
 
-    /////////////
-    /// CACHE ///
-    /////////////
-
-    /**
-     * Get cache manager.
-     *
-     * @return \Psr\SimpleCache\CacheInterface|null
-     */
-    public function getCacheManager(): ?CacheInterface
-    {
-        return $this->cache;
-    }
-
-    /**
-     * Is cache enabled?
-     *
-     * @return bool
-     */
-    public function isCacheEnabled(): bool
-    {
-        return $this->cache instanceof CacheInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function toCache(): array
-    {
-        return ['config'           => $this->config,
-                'locale'           => $this->locale,
-                'serviceContainer' => $this->serviceContainer,
-                'packages'         => $this->packages];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function fromCache(array $cache)
-    {
-        $this->loadedFromCache = true;
-        $this->config = $cache['config'];
-        $this->locale = $cache['locale'];
-        $this->serviceContainer = $cache['serviceContainer'];
-        $this->packages = $cache['packages'];
-
-        /** @var \Berlioz\Core\Package\PackageInterface $package */
-        foreach ($this->packages as $package) {
-            // CoreAwareInterface?
-            if ($package instanceof CoreAwareInterface) {
-                $package->setCore($this);
-            }
-        }
-    }
-
-    /////////////////////
-    /// SERIALIZATION ///
-    /////////////////////
-
-    /**
-     * @inheritdoc
-     * @throws \Berlioz\Core\Exception\BerliozException
-     */
-    public function serialize()
-    {
-        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', self::class));
-    }
-
-    /**
-     * @inheritdoc
-     * @throws \Berlioz\Core\Exception\BerliozException
-     */
-    public function unserialize($serialized)
-    {
-        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', self::class));
-    }
-
     //////////////
     /// DEBUG ///
     //////////////
@@ -283,11 +315,9 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      */
     public function getDebug(): Debug
     {
-        if (!is_null($this->debug)) {
-            return $this->debug;
+        if (is_null($this->debug)) {
+            $this->debug = new Debug($this);
         }
-
-        $this->debug = new Debug($this);
 
         return $this->debug;
     }
@@ -297,54 +327,129 @@ class Core implements ServiceContainerAwareInterface, \Serializable
     //////////////
 
     /**
-     * Get configuration.
+     * Init configuration.
      *
-     * @return \Berlioz\Core\Config
+     * @return \Berlioz\Config\ConfigInterface
      * @throws \Berlioz\Core\Exception\BerliozException
      */
-    public function getConfig(): ?Config
+    protected function initConfig(): ConfigInterface
     {
-        if (!is_null($this->config)) {
-            return $this->config;
-        }
+        $configActivity = (new Debug\Activity('Configuration', 'Berlioz'))->start();
 
         try {
-            $configActivity = (new Debug\Activity('Config (initialization)', 'Berlioz'))->start();
-
             // Create configuration (from default configuration)
-            $config = new Config(implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'resources', 'config.default.json']), true);
+            $configFile = implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'resources', 'config.default.json']);
+            $this->config = new ExtendedJsonConfig($configFile, true);
 
             // Init default configuration
-            $config->setVariable('berlioz.directories.working', $this->getDirectories()->getWorkingDir());
-            $config->setVariable('berlioz.directories.app', $this->getDirectories()->getAppDir());
-            $config->setVariable('berlioz.directories.config', $this->getDirectories()->getConfigDir());
-            $config->setVariable('berlioz.directories.cache', $this->getDirectories()->getCacheDir());
-            $config->setVariable('berlioz.directories.log', $this->getDirectories()->getLogDir());
-            $config->setVariable('berlioz.directories.debug', $this->getDirectories()->getDebugDir());
-            $config->setVariable('directory_separator', DIRECTORY_SEPARATOR);
+            $this->config->setVariables(['berlioz.directories.working', $this->getDirectories()->getWorkingDir(),
+                                         'berlioz.directories.app'    => $this->getDirectories()->getAppDir(),
+                                         'berlioz.directories.config' => $this->getDirectories()->getConfigDir(),
+                                         'berlioz.directories.cache'  => $this->getDirectories()->getCacheDir(),
+                                         'berlioz.directories.log'    => $this->getDirectories()->getLogDir(),
+                                         'berlioz.directories.debug'  => $this->getDirectories()->getDebugDir(),
+                                         'directory_separator'        => DIRECTORY_SEPARATOR]);
 
-            // Search website configs and add
+            // Init user configuration
+            $userConfig = new ExtendedJsonConfig('{}');
+
+            // Search user configs and add
             foreach (glob($this->getDirectories()->getConfigDir() . DIRECTORY_SEPARATOR . '*.json') as $configFile) {
-                $config->extendsJson($configFile, true, false);
+                $userConfig->merge(new ExtendedJsonConfig($configFile, true));
             }
 
-            // Set config to parent
-            $this->config = $config;
+            // Add packages from Composer
+            $this->getPackages()->addPackagesFromComposer();
+            // Add packages from configurations
+            $this->getPackages()->addPackagesFromConfig($this->config, $userConfig);
 
-            $this->getDebug()->getTimeLine()->addActivity($configActivity->end());
+            // Get configuration of packages
+            $this->getPackages()->config();
 
-            return $this->config;
-        } catch (BerliozException $e) {
-            throw $e;
+            // Merge user configuration
+            $this->config->merge($userConfig);
         } catch (\Throwable $e) {
-            throw new ConfigException('Configuration error', 0, $e);
+            throw new BerliozException('Configuration error', 0, $e);
+        } finally {
+            $this->getDebug()->getTimeLine()->addActivity($configActivity->end());
         }
+
+        return $this->config;
+    }
+
+    /**
+     * Get configuration.
+     *
+     * @return \Berlioz\Config\ConfigInterface|null
+     */
+    public function getConfig(): ?ConfigInterface
+    {
+        return $this->config;
     }
 
     /////////////////////////
     /// SERVICE CONTAINER ///
     /////////////////////////
 
+    /**
+     * Init service container.
+     *
+     * @return \Berlioz\ServiceContainer\ServiceContainer
+     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Berlioz\Core\Exception\ContainerException
+     */
+    public function initServiceContainer()
+    {
+        $containerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
+
+        try {
+            $this->serviceContainer = new ServiceContainer;
+            $servicesConfig = $this->getConfig()->get('services', []);
+
+            // Add services from configuration
+            foreach ($servicesConfig as $serviceAlias => $serviceConfig) {
+                // If service config is a string, so a class
+                if (is_string($serviceConfig)) {
+                    $this->serviceContainer->add(new Service($serviceConfig));
+                    continue;
+                }
+
+                // If not an array, continue, because not a class and not a config
+                if (!is_array($serviceConfig)) {
+                    continue;
+                }
+
+                if (empty($serviceConfig['class'])) {
+                    throw new ContainerException(sprintf('Missing class in configuration of service key "%s"', $serviceAlias));
+                }
+
+                // Create service object
+                $service = new Service($serviceConfig['class'], !is_numeric($serviceAlias) ? $serviceAlias : null);
+
+                if (!empty($serviceConfig['factory'])) {
+                    $service->setFactory($serviceConfig['factory']);
+                }
+
+                // Arguments
+                $service->addArguments($serviceConfig['arguments'] ?? []);
+
+                // Calls
+                foreach ($serviceConfig['calls'] ?? [] as $call) {
+                    $service->addCall($call['method'], $call['arguments'] ?? []);
+                }
+
+                $this->serviceContainer->add($service);
+            }
+
+            return $this->serviceContainer;
+        } catch (\Berlioz\ServiceContainer\Exception\ContainerException $e) {
+            throw new ContainerException('Service container error', 0, $e);
+        } catch (\Berlioz\Config\Exception\ConfigException $e) {
+            throw new BerliozException('Configuration error', 0, $e);
+        } finally {
+            $this->getDebug()->getTimeLine()->addActivity($containerActivity->end());
+        }
+    }
 
     /**
      * Get service container.
@@ -354,54 +459,11 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      */
     public function getServiceContainer(): ServiceContainer
     {
-        if (!is_null($this->serviceContainer)) {
-            return $this->serviceContainer;
+        if (is_null($this->serviceContainer)) {
+            $this->initServiceContainer();
         }
 
-        try {
-            $serviceContainerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
-
-            $this->serviceContainer = new ServiceContainer;
-            $servicesConfig = $this->getConfig()->get('services', []);
-
-            // Add services from configuration
-            foreach ($servicesConfig as $serviceAlias => $serviceConfig) {
-                if (is_string($serviceConfig)) {
-                    $this->serviceContainer->add(new Service($serviceConfig));
-                    continue;
-                }
-
-                if (is_array($serviceConfig)) {
-                    if (empty($serviceConfig['class'])) {
-                        throw new ContainerException(sprintf('Missing class in configuration of service key "%s"', $serviceAlias));
-                    }
-
-                    $service = new Service($serviceConfig['class'], !is_numeric($serviceAlias) ? $serviceAlias : null);
-
-                    if (!empty($serviceConfig['factory'])) {
-                        $service->setFactory($serviceConfig['factory']);
-                    }
-
-                    // Arguments
-                    $service->addArguments($serviceConfig['arguments'] ?? []);
-
-                    // Calls
-                    foreach ($serviceConfig['calls'] ?? [] as $call) {
-                        $service->addCall($call['method'], $call['arguments'] ?? []);
-                    }
-
-                    $this->serviceContainer->add($service);
-                }
-            }
-
-            $this->getDebug()->getTimeLine()->addActivity($serviceContainerActivity->end());
-
-            return $this->serviceContainer;
-        } catch (\Berlioz\ServiceContainer\Exception\ContainerException $e) {
-            throw new ContainerException('Service container error', 0, $e);
-        } catch (\Berlioz\Config\Exception\ConfigException $e) {
-            throw new ConfigException('Configuration error', 0, $e);
-        }
+        return $this->serviceContainer;
     }
 
     ////////////////
@@ -412,7 +474,7 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      * Get composer.
      *
      * @return \Berlioz\Core\Composer
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws \Berlioz\Core\Exception\ComposerException
      */
     public function getComposer(): Composer
     {
@@ -428,93 +490,17 @@ class Core implements ServiceContainerAwareInterface, \Serializable
     ////////////////
 
     /**
-     * Register packages.
+     * Get packages set.
      *
-     * @return void
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @return \Berlioz\Core\Package\PackageSet
      */
-    protected function registerPackages()
+    public function getPackages(): PackageSet
     {
-        if ($this->loadedFromCache) {
-            return;
+        if (is_null($this->packages)) {
+            $this->packages = new PackageSet($this);
         }
 
-        $packagesActivity = (new Debug\Activity('Packages (registration)', 'Berlioz'))->start();
-
-        // Get packages from PHP file
-        try {
-            $packagesName = $this->getComposer()->getPackagesName();
-
-            // Load default configuration of packages
-            foreach ($packagesName as $packageName) {
-                $package = $this->getComposer()->getPackage($packageName);
-
-                if (empty($package['config']['berlioz']['package'])) {
-                    continue;
-                }
-
-                $packageClass = $package['config']['berlioz']['package'];
-
-                if (!is_a($packageClass, PackageInterface::class, true)) {
-                    if (!class_exists($packageClass)) {
-                        throw new PackageException(sprintf('Package class "%s" does not exists', $packageClass));
-                    }
-
-                    throw new PackageException(sprintf('Package class "%s" must implements "%s" interface', $packageClass, PackageInterface::class));
-                }
-
-                // Create instance of package and call register method
-                /** @var \Berlioz\Core\Package\PackageInterface $package */
-                $package = $this->getServiceContainer()
-                                ->getInstantiator()
-                                ->newInstanceOf($packageClass);
-                $package->setCore($this);
-                $package->register();
-
-                // Add package
-                $this->packages[ltrim($packageClass, '\\')] = $package;
-            }
-        } catch (PackageException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            throw new PackageException('Error during packages loading', 0, $e);
-        } finally {
-            $this->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
-        }
-    }
-
-    /**
-     * Init packages.
-     *
-     * @throws \Berlioz\Core\Exception\PackageException
-     * @throws \Berlioz\Core\Exception\BerliozException
-     */
-    protected function initPackages()
-    {
-        $packagesActivity = (new Debug\Activity('Packages (initialization)', 'Berlioz'))->start();
-
-        foreach ($this->packages as $packageClass => $package) {
-            try {
-                // Init package
-                $package->init();
-            } catch (\Throwable $e) {
-                throw new PackageException(sprintf('Error during initialization of package: "%s"', $packageClass), 0, $e);
-            }
-        }
-
-        $this->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
-    }
-
-    /**
-     * Get package.
-     *
-     * @param string $class Class name of package
-     *
-     * @return \Berlioz\Core\Package\PackageInterface|null
-     */
-    public function getPackage(string $class): ?PackageInterface
-    {
-        return $this->packages[$class] ?? null;
+        return $this->packages;
     }
 
     //////////////
@@ -559,17 +545,11 @@ class Core implements ServiceContainerAwareInterface, \Serializable
      * Get directories.
      *
      * @return \Berlioz\Core\Directories\DirectoriesInterface
-     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getDirectories(): DirectoriesInterface
     {
         if (is_null($this->directories)) {
-            // Debug
-            $this->getDebug()->getTimeLine()->addActivity($berliozActivity = (new Debug\Activity('Directories', 'Berlioz'))->start());
-
             $this->directories = new DefaultDirectories();
-
-            $berliozActivity->end();
         }
 
         return $this->directories;

@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Config.git",
-                "reference": "b157bd1731287361950413b22197132bd27a7e23"
+                "reference": "3d5c8695b2b18fd93f9eb83826bd3fc6a33cb481"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/b157bd1731287361950413b22197132bd27a7e23",
-                "reference": "b157bd1731287361950413b22197132bd27a7e23",
+                "url": "https://api.github.com/repos/BerliozFramework/Config/zipball/3d5c8695b2b18fd93f9eb83826bd3fc6a33cb481",
+                "reference": "3d5c8695b2b18fd93f9eb83826bd3fc6a33cb481",
                 "shasum": ""
             },
             "require": {
@@ -46,7 +46,7 @@
             ],
             "description": "Berlioz Configuration",
             "homepage": "http://www.berlioz-framework.com",
-            "time": "2019-02-22T15:34:14+00:00"
+            "time": "2019-02-26T16:10:44+00:00"
         },
         {
             "name": "berlioz/helpers",
@@ -54,12 +54,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BerliozFramework/Helpers.git",
-                "reference": "d79a9264280547c8d5b3556202acdb3e1cb4f3d1"
+                "reference": "a88d9b773dbf7c8f5e3e25b29c54318c376897d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BerliozFramework/Helpers/zipball/d79a9264280547c8d5b3556202acdb3e1cb4f3d1",
-                "reference": "d79a9264280547c8d5b3556202acdb3e1cb4f3d1",
+                "url": "https://api.github.com/repos/BerliozFramework/Helpers/zipball/a88d9b773dbf7c8f5e3e25b29c54318c376897d4",
+                "reference": "a88d9b773dbf7c8f5e3e25b29c54318c376897d4",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,7 @@
             ],
             "description": "Helpers for Berlioz Framework",
             "homepage": "http://getberlioz.com",
-            "time": "2019-02-22T15:23:27+00:00"
+            "time": "2019-02-22T18:37:20+00:00"
         },
         {
             "name": "berlioz/service-container",

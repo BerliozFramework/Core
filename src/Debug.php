@@ -79,7 +79,7 @@ class Debug implements CoreAwareInterface, \Serializable
     /**
      * @inheritdoc
      */
-    public function serialize(): string
+    public function serialize()
     {
         return serialize(['uniqid'           => $this->uniqid,
                           'datetime'         => $this->datetime,

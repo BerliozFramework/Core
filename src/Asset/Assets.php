@@ -16,7 +16,7 @@ namespace Berlioz\Core\Asset;
 
 use Berlioz\Config\ConfigAwareInterface;
 use Berlioz\Config\ConfigAwareTrait;
-use Berlioz\Core\Config;
+use Berlioz\Config\ConfigInterface;
 
 /**
  * Class Assets.
@@ -29,14 +29,14 @@ class Assets implements ConfigAwareInterface
     /** @var \Berlioz\Core\Asset\Manifest Manifest */
     private $manifest;
     /** @var \Berlioz\Core\Asset\EntryPoints Entry points file */
-    private $entrypoints;
+    private $entryPoints;
 
     /**
      * Assets constructor.
      *
-     * @param \Berlioz\Core\Config $config
+     * @param \Berlioz\Config\ConfigInterface $config
      */
-    public function __construct(Config $config)
+    public function __construct(ConfigInterface $config)
     {
         $this->setConfig($config);
     }
@@ -66,11 +66,11 @@ class Assets implements ConfigAwareInterface
      */
     public function getEntryPoints(): EntryPoints
     {
-        if (is_null($this->entrypoints)) {
-            $this->entrypoints = new EntryPoints($this->getConfig()->get('berlioz.assets.entrypoints'),
+        if (is_null($this->entryPoints)) {
+            $this->entryPoints = new EntryPoints($this->getConfig()->get('berlioz.assets.entrypoints'),
                                                  $this->getConfig()->get('berlioz.assets.entrypoints_key'));
         }
 
-        return $this->entrypoints;
+        return $this->entryPoints;
     }
 }

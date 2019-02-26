@@ -63,7 +63,7 @@ class Composer implements \Serializable
     /**
      * @inheritdoc
      */
-    public function unserialize($serialized)
+    public function unserialize($serialized): void
     {
         $unserialized = unserialize($serialized);
 
@@ -78,9 +78,11 @@ class Composer implements \Serializable
     //////////////////////
 
     /**
+     * Init.
+     *
      * @throws \Berlioz\Core\Exception\ComposerException
      */
-    private function init()
+    private function init(): void
     {
         // Load composer.json
         $this->composerJson = $this->loadJsonFile($this->composerJsonFilename);
