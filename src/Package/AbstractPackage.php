@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
+use Berlioz\Config\ExtendedJsonConfig;
+use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareTrait;
 use Berlioz\ServiceContainer\Service;
 
@@ -22,7 +24,7 @@ use Berlioz\ServiceContainer\Service;
  *
  * @package Berlioz\Core\Package
  */
-abstract class AbstractPackage implements PackageInterface, \Serializable
+abstract class AbstractPackage implements PackageInterface
 {
     use CoreAwareTrait;
 
@@ -52,44 +54,36 @@ abstract class AbstractPackage implements PackageInterface, \Serializable
     /**
      * @inheritdoc
      */
-    public function register()
+    public static function config()
     {
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public static function register(Core $core): void
     {
     }
 
     /**
      * Add new service to the service container.
      *
+     * @param \Berlioz\Core\Core                $core
      * @param \Berlioz\ServiceContainer\Service $service
      *
-     * @return static
+     * @return void
      * @throws \Berlioz\Core\Exception\BerliozException
      */
-    protected function addService(Service $service): AbstractPackage
+    protected static function addService(Core $core, Service $service): void
     {
-        $this->getCore()->getServiceContainer()->add($service);
-
-        return $this;
+        $core->getServiceContainer()->add($service);
     }
 
     /**
-     * Merge configuration.
-     *
-     * @param string $configFileName
-     *
-     * @return static
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @inheritdoc
      */
-    protected function mergeConfig(string $configFileName): AbstractPackage
+    public function init(): void
     {
-        $this->getCore()->getConfig()->extendsJson($configFileName, true, true);
-
-        return $this;
     }
 }

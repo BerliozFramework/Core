@@ -14,7 +14,6 @@ namespace Berlioz\Core\Tests;
 
 use Berlioz\Config\ConfigInterface;
 use Berlioz\Core\Composer;
-use Berlioz\Core\Config;
 use Berlioz\Core\Core;
 use Berlioz\Core\Debug;
 use Berlioz\Core\Directories\DefaultDirectories;
@@ -99,7 +98,6 @@ class CoreTest extends TestCase
     public function testGetConfig(Core $core)
     {
         $this->assertInstanceOf(ConfigInterface::class, $core->getConfig());
-        $this->assertInstanceOf(Config::class, $core->getConfig());
     }
 
     /**
@@ -125,7 +123,7 @@ class CoreTest extends TestCase
      */
     public function testGetPackage(Core $core)
     {
-        $this->assertNull($core->getPackage('unknown'));
+        $this->assertNull($core->getPackages('unknown'));
     }
 
     /**
