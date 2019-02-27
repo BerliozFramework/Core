@@ -19,6 +19,7 @@ use Berlioz\Core\Debug;
 use Berlioz\Core\Directories\DefaultDirectories;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
+use Berlioz\Core\Package\PackageSet;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
 
@@ -123,7 +124,7 @@ class CoreTest extends TestCase
      */
     public function testGetPackage(Core $core)
     {
-        $this->assertNull($core->getPackages('unknown'));
+        $this->assertInstanceOf(PackageSet::class, $core->getPackages());
     }
 
     /**
