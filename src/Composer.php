@@ -125,7 +125,7 @@ class Composer implements \Serializable
     private function loadPackageJson(string $packageName): array
     {
         // Get target directories
-        $targetDirs = array_column($this->composerLock['packages'], 'target-dir', 'name');
+        $packagesFromLock = array_column($this->composerLock['packages'], null, 'name');
 
         // Get package directory and composer.json path
         $packageDirectory = dirname($this->composerJsonFilename) .
@@ -134,7 +134,7 @@ class Composer implements \Serializable
                             DIRECTORY_SEPARATOR .
                             str_replace('/', DIRECTORY_SEPARATOR, $packageName) .
                             DIRECTORY_SEPARATOR .
-                            str_replace('/', DIRECTORY_SEPARATOR, $targetDirs[$packageName] ?? '');
+                            str_replace('/', DIRECTORY_SEPARATOR, $packagesFromLock[$packageName]['target-dir'] ?? '');
         $packageDirectory = rtrim($packageDirectory, DIRECTORY_SEPARATOR);
         $composerFile = $packageDirectory . DIRECTORY_SEPARATOR . 'composer.json';
 
@@ -143,7 +143,7 @@ class Composer implements \Serializable
         }
 
         if (!file_exists($composerFile)) {
-            throw new ComposerException(sprintf('Unable to find composer.json file of package "%s"', $packageName));
+            return $packagesFromLock[$packageName];
         }
 
         return $this->loadJsonFile($composerFile);
