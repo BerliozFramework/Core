@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Directories;
 
+use Berlioz\Core\Exception\BerliozException;
+
 /**
  * Class DefaultDirectories.
  *
@@ -40,16 +42,15 @@ class DefaultDirectories implements DirectoriesInterface
 
     /**
      * @inheritdoc
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getWorkingDir(): string
     {
         if (is_null($this->workingDirectory)) {
-            // Get document root from server configuration
-            if (getenv('DOCUMENT_ROOT') !== false) {
-                return $this->workingDirectory = rtrim(getenv('DOCUMENT_ROOT'), '\\/');
+            // Get current working directory or file directory
+            if (($this->workingDirectory = getcwd()) === false) {
+                throw new BerliozException('Unable to get current working directory');
             }
-
-            return $this->workingDirectory = getcwd() ?: __DIR__;
         }
 
         return $this->workingDirectory;
@@ -57,6 +58,7 @@ class DefaultDirectories implements DirectoriesInterface
 
     /**
      * @inheritdoc
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getAppDir(): string
     {
@@ -92,6 +94,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get config directory.
      *
      * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getConfigDir(): string
     {
@@ -106,6 +109,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get var directory.
      *
      * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getVarDir(): string
     {
@@ -120,6 +124,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get cache directory.
      *
      * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getCacheDir(): string
     {
@@ -134,6 +139,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get log directory.
      *
      * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getLogDir(): string
     {
@@ -148,6 +154,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get debug directory.
      *
      * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getDebugDir(): string
     {
@@ -162,6 +169,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get vendor directory.
      *
      * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function getVendorDir(): string
     {

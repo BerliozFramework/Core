@@ -10,6 +10,7 @@
  * file that was distributed with this source code, to the root.
  */
 putenv(sprintf('DOCUMENT_ROOT=%s', realpath(__DIR__ . '/_envTest/public')));
+chdir(getenv('DOCUMENT_ROOT'));
 
 $file = __DIR__ . '/../vendor/autoload.php';
 if (!file_exists($file)) {
