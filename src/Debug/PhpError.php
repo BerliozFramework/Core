@@ -103,17 +103,15 @@ class PhpError extends AbstractSection implements \Countable
      * @param  string  $message The error message
      * @param  string  $file    The filename that the error was raised in
      * @param  int     $line    The line number the error was raised at
-     * @param  array[] $context Array that points to the active symbol table at the point the error occurred
      *
      * @return false
      */
-    public function phpErrorHandler(int $errno, string $message, ?string $file = null, ?int $line = null, ?array $context = null)
+    public function phpErrorHandler(int $errno, string $message, ?string $file = null, ?int $line = null)
     {
         $this->phpErrors[] = ['errno'   => $errno,
                               'message' => $message,
                               'file'    => $file,
-                              'line'    => $line,
-                              'context' => $context];
+                              'line'    => $line];
 
         return false;
     }
