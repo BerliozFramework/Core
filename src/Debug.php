@@ -47,6 +47,8 @@ class Debug implements CoreAwareInterface, \Serializable
     protected $timeLine;
     /** @var \Berlioz\Core\Debug\PhpError */
     protected $phpError;
+    /** @var string|null Exception */
+    protected $exception;
     /** @var \Berlioz\Core\Debug\Section[] */
     protected $sections;
 
@@ -90,6 +92,7 @@ class Debug implements CoreAwareInterface, \Serializable
                           'config'           => $this->getConfig() ?? [],
                           'timeLine'         => $this->timeLine,
                           'phpError'         => $this->phpError,
+                          'exception'        => $this->exception,
                           'sections'         => $this->sections]);
     }
 
@@ -110,6 +113,7 @@ class Debug implements CoreAwareInterface, \Serializable
         $this->config = $unserialized['config'] ?? [];
         $this->timeLine = $unserialized['timeLine'] ?? new TimeLine;
         $this->phpError = $unserialized['phpError'] ?? new PhpError;
+        $this->exception = $unserialized['exception'] ?? null;
         $this->sections = $unserialized['sections'] ?? [];
     }
 
@@ -172,7 +176,6 @@ class Debug implements CoreAwareInterface, \Serializable
      * Save report.
      *
      * @throws \Berlioz\Config\Exception\ConfigException
-     * @throws \Berlioz\Core\Exception\BerliozException
      */
     public function saveReport()
     {
@@ -311,6 +314,40 @@ class Debug implements CoreAwareInterface, \Serializable
     public function getPhpError(): PhpError
     {
         return $this->phpError;
+    }
+
+    /**
+     * Has exception thrown?
+     *
+     * @return bool
+     */
+    public function hasExceptionThrown(): bool
+    {
+        return !is_null($this->exception);
+    }
+
+    /**
+     * Get exception thrown (trace).
+     *
+     * @return string|null
+     */
+    public function getExceptionThrown(): ?string
+    {
+        return $this->exception;
+    }
+
+    /**
+     * Set exception thrown.
+     *
+     * @param \Throwable $e
+     *
+     * @return static
+     */
+    public function setExceptionThrown(\Throwable $e): Debug
+    {
+        $this->exception = (string) $e;
+
+        return $this;
     }
 
     /**
