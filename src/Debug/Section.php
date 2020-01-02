@@ -14,12 +14,14 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+use Serializable;
+
 /**
  * Interface Section.
  *
  * @package Berlioz\Core\Debug
  */
-interface Section extends \Serializable
+interface Section extends Serializable
 {
     /**
      * Get string representation of debug section.

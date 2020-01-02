@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Exception;
 
+use Exception;
+
 /**
  * Exception BerliozException.
  *
@@ -21,6 +23,6 @@ namespace Berlioz\Core\Exception;
  *
  * @package Berlioz\Core\Exception
  */
-class BerliozException extends \Exception
+class BerliozException extends Exception
 {
 }

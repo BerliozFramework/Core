@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core\Asset;
 
 use Berlioz\Core\Exception\AssetException;
+use Exception;
 
 /**
  * Class EntryPoints.
@@ -29,8 +30,8 @@ class EntryPoints extends JsonAsset
     /**
      * EntryPoints constructor.
      *
-     * @param string      $filename Filename
-     * @param string|null $target   Target to get entry points
+     * @param string $filename Filename
+     * @param string|null $target Target to get entry points
      *
      * @throws \Berlioz\Core\Exception\AssetException
      */
@@ -41,12 +42,12 @@ class EntryPoints extends JsonAsset
 
         if (!empty($this->target)) {
             try {
-                if (is_null($this->assets = b_array_traverse_get($this->assets,$this->target))) {
+                if (null === ($this->assets = b_array_traverse_get($this->assets, $this->target))) {
                     throw new AssetException(sprintf('Key "%s" to target entry points is invalid', $this->target));
                 }
             } catch (AssetException $e) {
                 throw $e;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 throw new AssetException(sprintf('Error to target key "%s" of entry points', $this->target), 0, $e);
             }
         }
@@ -55,7 +56,7 @@ class EntryPoints extends JsonAsset
     /**
      * Get asset for given entry name and file type.
      *
-     * @param string      $entry
+     * @param string $entry
      * @param string|null $type
      *
      * @return array
@@ -66,15 +67,17 @@ class EntryPoints extends JsonAsset
             return [];
         }
 
-        if (is_null($type)) {
+        if (null === $type) {
             $assets = $this->assets[$entry];
 
-            array_walk($assets,
+            array_walk(
+                $assets,
                 function (&$value) {
                     if (!is_array($value)) {
                         $value = [$value];
                     }
-                });
+                }
+            );
 
             return $assets;
         }

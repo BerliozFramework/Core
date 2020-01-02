@@ -50,7 +50,7 @@ class Assets implements ConfigAwareInterface
      */
     public function getManifest(): Manifest
     {
-        if (is_null($this->manifest)) {
+        if (null === $this->manifest) {
             $this->manifest = new Manifest($this->getConfig()->get('berlioz.assets.manifest'));
         }
 
@@ -66,9 +66,12 @@ class Assets implements ConfigAwareInterface
      */
     public function getEntryPoints(): EntryPoints
     {
-        if (is_null($this->entryPoints)) {
-            $this->entryPoints = new EntryPoints($this->getConfig()->get('berlioz.assets.entrypoints'),
-                                                 $this->getConfig()->get('berlioz.assets.entrypoints_key'));
+        if (null === $this->entryPoints) {
+            $this->entryPoints =
+                new EntryPoints(
+                    $this->getConfig()->get('berlioz.assets.entrypoints'),
+                    $this->getConfig()->get('berlioz.assets.entrypoints_key')
+                );
         }
 
         return $this->entryPoints;

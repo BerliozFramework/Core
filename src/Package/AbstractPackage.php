@@ -14,7 +14,6 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
-use Berlioz\Config\ExtendedJsonConfig;
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareTrait;
 use Berlioz\ServiceContainer\Service;
@@ -69,7 +68,7 @@ abstract class AbstractPackage implements PackageInterface
     /**
      * Add new service to the service container.
      *
-     * @param \Berlioz\Core\Core                $core
+     * @param \Berlioz\Core\Core $core
      * @param \Berlioz\ServiceContainer\Service $service
      *
      * @return void

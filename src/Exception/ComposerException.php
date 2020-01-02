@@ -12,6 +12,11 @@
 
 namespace Berlioz\Core\Exception;
 
+/**
+ * Class ComposerException.
+ *
+ * @package Berlioz\Core\Exception
+ */
 class ComposerException extends BerliozException
 {
 }

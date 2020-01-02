@@ -16,13 +16,14 @@ namespace Berlioz\Core\Package;
 
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
+use Serializable;
 
 /**
  * Interface PackageInterface.
  *
  * @package Berlioz\Core\Package
  */
-interface PackageInterface extends CoreAwareInterface, \Serializable
+interface PackageInterface extends CoreAwareInterface, Serializable
 {
     /**
      * Package configuration.

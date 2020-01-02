@@ -39,7 +39,7 @@ abstract class AbstractApp implements CoreAwareInterface
      */
     public function __construct(?Core $core = null)
     {
-        if (is_null($core)) {
+        if (null === $core) {
             $core = new Core();
         }
 

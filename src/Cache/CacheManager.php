@@ -17,6 +17,9 @@ namespace Berlioz\Core\Cache;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\CacheException;
 use Berlioz\Core\Exception\InvalidArgumentCacheException;
+use DateInterval;
+use DateTime;
+use Exception;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -64,11 +67,11 @@ class CacheManager implements CacheInterface
      */
     private function isValidTtl($ttl): bool
     {
-        if (is_null($ttl)) {
+        if (null === $ttl) {
             return true;
         }
 
-        if ($ttl instanceof \DateTime && $ttl > new \DateTime('now')) {
+        if ($ttl instanceof DateTime && $ttl > new DateTime('now')) {
             return true;
         }
 
@@ -86,14 +89,15 @@ class CacheManager implements CacheInterface
     {
         $name = md5($name);
 
-        return $this->directories->getCacheDir() .
-               DIRECTORY_SEPARATOR .
-               static::CACHE_DIRECTORY .
-               DIRECTORY_SEPARATOR .
-               substr($name, 0, 2) .
-               DIRECTORY_SEPARATOR .
-               $name .
-               '.txt';
+        return
+            $this->directories->getCacheDir() .
+            DIRECTORY_SEPARATOR .
+            static::CACHE_DIRECTORY .
+            DIRECTORY_SEPARATOR .
+            substr($name, 0, 2) .
+            DIRECTORY_SEPARATOR .
+            $name .
+            '.txt';
     }
 
     /**
@@ -120,12 +124,14 @@ class CacheManager implements CacheInterface
         try {
             if ($this->isValidTtl($unserialized['ttl'])) {
                 if (($unserializedData = @unserialize($unserialized['data'] ?? null)) === false) {
-                    throw new CacheException(sprintf('Corrupted data for key "%s" from cache "%s"', $key, $cacheFilename));
+                    throw new CacheException(
+                        sprintf('Corrupted data for key "%s" from cache "%s"', $key, $cacheFilename)
+                    );
                 }
 
                 return $unserializedData;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new CacheException('TTL cache exception', 0, $e);
         }
 
@@ -146,23 +152,25 @@ class CacheManager implements CacheInterface
         }
 
         try {
-            if (!is_null($ttl)) {
+            if (null !== $ttl) {
                 if (is_int($ttl)) {
-                    $ttl = new \DateInterval(sprintf('PT%dS', $ttl));
+                    $ttl = new DateInterval(sprintf('PT%dS', $ttl));
                 }
 
-                if (!($ttl instanceof \DateInterval)) {
+                if (!($ttl instanceof DateInterval)) {
                     throw new InvalidArgumentCacheException(sprintf('Not valid TTL for key "%s"', $key));
                 }
 
-                $ttl = (new \DateTime('now'))->add($ttl);
+                $ttl = (new DateTime('now'))->add($ttl);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new CacheException('TTL cache exception', 0, $e);
         }
 
-        $data = ['ttl'  => $ttl,
-                 'data' => $serialized];
+        $data = [
+            'ttl' => $ttl,
+            'data' => $serialized,
+        ];
 
         if (!is_dir($directory = dirname($cacheFilename))) {
             if (@mkdir($directory, 0777, true) === false) {
@@ -202,9 +210,10 @@ class CacheManager implements CacheInterface
      */
     public function clear()
     {
-        $cacheDir = $this->directories->getCacheDir() .
-                    DIRECTORY_SEPARATOR .
-                    static::CACHE_DIRECTORY;
+        $cacheDir =
+            $this->directories->getCacheDir() .
+            DIRECTORY_SEPARATOR .
+            static::CACHE_DIRECTORY;
 
         if (is_dir($cacheDir)) {
             return $this->rmdir($cacheDir);
@@ -223,6 +232,7 @@ class CacheManager implements CacheInterface
     private function rmdir(string $dir)
     {
         $dir = rtrim($dir, '\\/');
+
         if (($files = scandir($dir)) === false) {
             return false;
         }

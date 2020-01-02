@@ -15,13 +15,14 @@ declare(strict_types=1);
 namespace Berlioz\Core;
 
 use Berlioz\Core\Exception\ComposerException;
+use Serializable;
 
 /**
  * Class Composer.
  *
  * @package Berlioz\Core
  */
-class Composer implements \Serializable
+class Composer implements Serializable
 {
     /** @var string Composer JSON filename */
     private $composerJsonFilename;
@@ -54,10 +55,14 @@ class Composer implements \Serializable
      */
     public function serialize()
     {
-        return serialize(['composerJsonFilename' => $this->composerJsonFilename,
-                          'composerJson'         => $this->composerJson,
-                          'composerLock'         => $this->composerLock,
-                          'packages'             => $this->packages]);
+        return serialize(
+            [
+                'composerJsonFilename' => $this->composerJsonFilename,
+                'composerJson' => $this->composerJson,
+                'composerLock' => $this->composerLock,
+                'packages' => $this->packages,
+            ]
+        );
     }
 
     /**
@@ -89,18 +94,22 @@ class Composer implements \Serializable
 
         // Reconstitute the composer.lock filename
         $composerLockFilename = dirname($this->composerJsonFilename) .
-                                DIRECTORY_SEPARATOR .
-                                basename($this->composerJsonFilename, '.json') .
-                                '.lock';
+            DIRECTORY_SEPARATOR .
+            basename($this->composerJsonFilename, '.json') .
+            '.lock';
 
         // Check if composer.lock file exists
         if (!file_exists($composerLockFilename)) {
-            throw new ComposerException(sprintf('Project is not initialized with Composer, "%s" file doest not exists', $composerLockFilename));
+            throw new ComposerException(
+                sprintf('Project is not initialized with Composer, "%s" file doest not exists', $composerLockFilename)
+            );
         }
 
         // Get JSON content of composer.json file
         if (($this->composerLock = json_decode(file_get_contents($composerLockFilename), true)) === false) {
-            throw new ComposerException(sprintf('"%s" file of project is corrupted or not readable', $composerLockFilename));
+            throw new ComposerException(
+                sprintf('"%s" file of project is corrupted or not readable', $composerLockFilename)
+            );
         }
 
         // Reindex packages
@@ -128,13 +137,14 @@ class Composer implements \Serializable
         $packagesFromLock = array_column($this->composerLock['packages'], null, 'name');
 
         // Get package directory and composer.json path
-        $packageDirectory = dirname($this->composerJsonFilename) .
-                            DIRECTORY_SEPARATOR .
-                            ($this->composerJson['config']['vendor-dir'] ?? 'vendor') .
-                            DIRECTORY_SEPARATOR .
-                            str_replace('/', DIRECTORY_SEPARATOR, $packageName) .
-                            DIRECTORY_SEPARATOR .
-                            str_replace('/', DIRECTORY_SEPARATOR, $packagesFromLock[$packageName]['target-dir'] ?? '');
+        $packageDirectory =
+            dirname($this->composerJsonFilename) .
+            DIRECTORY_SEPARATOR .
+            ($this->composerJson['config']['vendor-dir'] ?? 'vendor') .
+            DIRECTORY_SEPARATOR .
+            str_replace('/', DIRECTORY_SEPARATOR, $packageName) .
+            DIRECTORY_SEPARATOR .
+            str_replace('/', DIRECTORY_SEPARATOR, $packagesFromLock[$packageName]['target-dir'] ?? '');
         $packageDirectory = rtrim($packageDirectory, DIRECTORY_SEPARATOR);
         $composerFile = $packageDirectory . DIRECTORY_SEPARATOR . 'composer.json';
 
@@ -209,7 +219,7 @@ class Composer implements \Serializable
             throw new ComposerException(sprintf('Unable to found "%s" composer package', $name));
         }
 
-        if (is_null($this->packages[$name])) {
+        if (null === $this->packages[$name]) {
             $this->packages[$name] = $this->loadPackageJson($name);
         }
 
@@ -241,9 +251,11 @@ class Composer implements \Serializable
     public function getPackages(): array
     {
         foreach ($this->packages as $name => &$package) {
-            if (is_null($package)) {
-                $package = $this->loadPackageJson($name);
+            if (null !== $package) {
+                continue;
             }
+
+            $package = $this->loadPackageJson($name);
         }
 
         return $this->packages;
