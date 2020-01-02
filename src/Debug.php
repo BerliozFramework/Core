@@ -18,13 +18,16 @@ use Berlioz\Core\Debug\PhpError;
 use Berlioz\Core\Debug\Section;
 use Berlioz\Core\Debug\TimeLine;
 use Berlioz\Core\Exception\BerliozException;
+use DateTime;
+use Serializable;
+use Throwable;
 
 /**
  * Class Debug.
  *
  * @package Berlioz\Core
  */
-class Debug implements CoreAwareInterface, \Serializable
+class Debug implements CoreAwareInterface, Serializable
 {
     use CoreAwareTrait;
     /** @var bool Enabled? */
@@ -64,7 +67,7 @@ class Debug implements CoreAwareInterface, \Serializable
         try {
             $this->setCore($core);
             $this->uniqid = uniqid();
-            $this->datetime = new \DateTime;
+            $this->datetime = new DateTime;
 
             $this->systemInfo = [];
             $this->phpInfo = [];
@@ -73,7 +76,7 @@ class Debug implements CoreAwareInterface, \Serializable
             $this->timeLine = new TimeLine;
             $this->phpError = (new PhpError)->handle();
             $this->sections = [];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new BerliozException('Unable to init Debug class', 0, $e);
         }
     }
@@ -83,17 +86,21 @@ class Debug implements CoreAwareInterface, \Serializable
      */
     public function serialize()
     {
-        return serialize(['uniqid'           => $this->uniqid,
-                          'datetime'         => $this->datetime,
-                          'systemInfo'       => $this->getSystemInfo(),
-                          'phpInfo'          => $this->getPhpInfo(),
-                          'performancesInfo' => $this->getPerformancesInfo(),
-                          'projectInfo'      => $this->getProjectInfo(),
-                          'config'           => $this->getConfig() ?? [],
-                          'timeLine'         => $this->timeLine,
-                          'phpError'         => $this->phpError,
-                          'exception'        => $this->exception,
-                          'sections'         => $this->sections]);
+        return serialize(
+            [
+                'uniqid' => $this->uniqid,
+                'datetime' => $this->datetime,
+                'systemInfo' => $this->getSystemInfo(),
+                'phpInfo' => $this->getPhpInfo(),
+                'performancesInfo' => $this->getPerformancesInfo(),
+                'projectInfo' => $this->getProjectInfo(),
+                'config' => $this->getConfig() ?? [],
+                'timeLine' => $this->timeLine,
+                'phpError' => $this->phpError,
+                'exception' => $this->exception,
+                'sections' => $this->sections,
+            ]
+        );
     }
 
     /**
@@ -105,7 +112,7 @@ class Debug implements CoreAwareInterface, \Serializable
         $unserialized = unserialize($serialized);
 
         $this->uniqid = $unserialized['uniqid'] ?? uniqid();
-        $this->datetime = $unserialized['datetime'] ?? new \DateTime;
+        $this->datetime = $unserialized['datetime'] ?? new DateTime;
         $this->systemInfo = $unserialized['systemInfo'] ?? [];
         $this->phpInfo = $unserialized['phpInfo'] ?? [];
         $this->performancesInfo = $unserialized['performancesInfo'] ?? [];
@@ -124,38 +131,38 @@ class Debug implements CoreAwareInterface, \Serializable
      */
     public function isEnabled(): bool
     {
-        if (is_null($this->enabled)) {
-            try {
-                $debug = $this->getCore()->getConfig()->get('berlioz.debug', false);
-
-                if (is_bool($debug)) {
-                    return $this->enabled = $debug;
-                }
-
-                // Get ip
-                $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
-
-                if (is_null($ipAddress)) {
-                    return $this->enabled = false;
-                }
-
-                // Find ip
-                if (in_array($ipAddress, $debug)) {
-                    return $this->enabled = true;
-                }
-
-                // Find host
-                if (in_array(gethostbyaddr($ipAddress), $debug)) {
-                    return $this->enabled = true;
-                }
-
-                return $this->enabled = false;
-            } catch (\Throwable $e) {
-                return false;
-            }
+        if (null !== $this->enabled) {
+            return $this->enabled;
         }
 
-        return $this->enabled;
+        try {
+            $debug = $this->getCore()->getConfig()->get('berlioz.debug', false);
+
+            if (is_bool($debug)) {
+                return $this->enabled = $debug;
+            }
+
+            // Get ip
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+
+            if (null === $ipAddress) {
+                return $this->enabled = false;
+            }
+
+            // Find ip
+            if (in_array($ipAddress, $debug)) {
+                return $this->enabled = true;
+            }
+
+            // Find host
+            if (in_array(gethostbyaddr($ipAddress), $debug)) {
+                return $this->enabled = true;
+            }
+
+            return $this->enabled = false;
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -185,8 +192,10 @@ class Debug implements CoreAwareInterface, \Serializable
 
         if (!empty($debugDirectory = $this->getCore()->getConfig()->get('berlioz.directories.debug'))) {
             if (is_dir($debugDirectory) || mkdir($debugDirectory, 0777, true)) {
-                file_put_contents($debugDirectory . DIRECTORY_SEPARATOR . $this->getUniqid() . '.debug',
-                                  gzdeflate(serialize($this)));
+                file_put_contents(
+                    $debugDirectory . DIRECTORY_SEPARATOR . $this->getUniqid() . '.debug',
+                    gzdeflate(serialize($this))
+                );
             }
         }
     }
@@ -206,7 +215,7 @@ class Debug implements CoreAwareInterface, \Serializable
      *
      * @return \DateTime
      */
-    public function getDatetime(): \DateTime
+    public function getDatetime(): DateTime
     {
         return $this->datetime;
     }
@@ -219,13 +228,15 @@ class Debug implements CoreAwareInterface, \Serializable
     public function getSystemInfo(): array
     {
         if (empty($this->systemInfo)) {
-            $this->systemInfo = ['uname'        => php_uname(),
-                                 'current_user' => get_current_user(),
-                                 'uid'          => getmyuid(),
-                                 'gid'          => getmygid(),
-                                 'pid'          => getmypid(),
-                                 'inode'        => getmyinode(),
-                                 'tmp_dir'      => sys_get_temp_dir()];
+            $this->systemInfo = [
+                'uname' => php_uname(),
+                'current_user' => get_current_user(),
+                'uid' => getmyuid(),
+                'gid' => getmygid(),
+                'pid' => getmypid(),
+                'inode' => getmyinode(),
+                'tmp_dir' => sys_get_temp_dir(),
+            ];
         }
 
         return $this->systemInfo;
@@ -239,10 +250,12 @@ class Debug implements CoreAwareInterface, \Serializable
     public function getPhpInfo(): array
     {
         if (empty($this->phpInfo)) {
-            $this->phpInfo = ['php_version'  => phpversion(),
-                              'sapi'         => php_sapi_name(),
-                              'memory_limit' => b_size_from_ini(ini_get('memory_limit')),
-                              'extensions'   => get_loaded_extensions()];
+            $this->phpInfo = [
+                'php_version' => phpversion(),
+                'sapi' => php_sapi_name(),
+                'memory_limit' => b_size_from_ini(ini_get('memory_limit')),
+                'extensions' => get_loaded_extensions(),
+            ];
         }
 
         return $this->phpInfo;
@@ -256,8 +269,10 @@ class Debug implements CoreAwareInterface, \Serializable
     public function getPerformancesInfo(): array
     {
         if (empty($this->performancesInfo)) {
-            $this->performancesInfo = ['loadavg'           => function_exists('sys_getloadavg') ? sys_getloadavg() : [],
-                                       'memory_peak_usage' => memory_get_peak_usage()];
+            $this->performancesInfo = [
+                'loadavg' => function_exists('sys_getloadavg') ? sys_getloadavg() : [],
+                'memory_peak_usage' => memory_get_peak_usage(),
+            ];
         }
 
         return $this->performancesInfo;
@@ -271,8 +286,10 @@ class Debug implements CoreAwareInterface, \Serializable
     public function getProjectInfo(): array
     {
         if (empty($this->projectInfo)) {
-            $this->projectInfo = ['declared_classes' => get_declared_classes(),
-                                  'included_files'   => get_included_files()];
+            $this->projectInfo = [
+                'declared_classes' => get_declared_classes(),
+                'included_files' => get_included_files(),
+            ];
         }
 
         return $this->projectInfo;
@@ -285,10 +302,10 @@ class Debug implements CoreAwareInterface, \Serializable
      */
     public function getConfig(): array
     {
-        if (is_null($this->config)) {
+        if (null === $this->config) {
             try {
                 $this->config = $this->getCore()->getConfig()->get();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->config = [];
             }
         }
@@ -323,7 +340,7 @@ class Debug implements CoreAwareInterface, \Serializable
      */
     public function hasExceptionThrown(): bool
     {
-        return !is_null($this->exception);
+        return null !== $this->exception;
     }
 
     /**
@@ -343,9 +360,9 @@ class Debug implements CoreAwareInterface, \Serializable
      *
      * @return static
      */
-    public function setExceptionThrown(\Throwable $e): Debug
+    public function setExceptionThrown(Throwable $e): Debug
     {
-        $this->exception = (string) $e;
+        $this->exception = (string)$e;
 
         return $this;
     }
@@ -363,13 +380,13 @@ class Debug implements CoreAwareInterface, \Serializable
     /**
      * Get section.
      *
-     * @param string $id
+     * @param string $sectionId
      *
      * @return \Berlioz\Core\Debug\Section|null
      */
-    public function getSection(string $id): ?Section
+    public function getSection(string $sectionId): ?Section
     {
-        return $this->sections[$id] ?? null;
+        return $this->sections[$sectionId] ?? null;
     }
 
     /**

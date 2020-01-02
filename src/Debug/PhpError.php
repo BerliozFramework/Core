@@ -14,12 +14,14 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+use Countable;
+
 /**
  * Class PhpError.
  *
  * @package Berlioz\Core\Debug
  */
-class PhpError extends AbstractSection implements \Countable
+class PhpError extends AbstractSection implements Countable
 {
     /** @var array PHP errors */
     private $phpErrors;
@@ -99,19 +101,21 @@ class PhpError extends AbstractSection implements \Countable
     /**
      * PHP error handler function
      *
-     * @param  int     $errno   The level of the error raised
-     * @param  string  $message The error message
-     * @param  string  $file    The filename that the error was raised in
-     * @param  int     $line    The line number the error was raised at
+     * @param int $errno The level of the error raised
+     * @param string $message The error message
+     * @param string $file The filename that the error was raised in
+     * @param int $line The line number the error was raised at
      *
      * @return false
      */
     public function phpErrorHandler(int $errno, string $message, ?string $file = null, ?int $line = null)
     {
-        $this->phpErrors[] = ['errno'   => $errno,
-                              'message' => $message,
-                              'file'    => $file,
-                              'line'    => $line];
+        $this->phpErrors[] = [
+            'errno' => $errno,
+            'message' => $message,
+            'file' => $file,
+            'line' => $line,
+        ];
 
         return false;
     }

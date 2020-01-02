@@ -46,7 +46,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getWorkingDir(): string
     {
-        if (is_null($this->workingDirectory)) {
+        if (null === $this->workingDirectory) {
             // Get current working directory or file directory
             if (($this->workingDirectory = getcwd()) === false) {
                 throw new BerliozException('Unable to get current working directory');
@@ -62,7 +62,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getAppDir(): string
     {
-        if (!is_null($this->appDirectory)) {
+        if (!null === $this->appDirectory) {
             return $this->appDirectory;
         }
 
@@ -83,7 +83,7 @@ class DefaultDirectories implements DirectoriesInterface
             $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
         } while ($directory !== false && $directoryBefore != $directory);
 
-        if (is_null($this->appDirectory)) {
+        if (null === $this->appDirectory) {
             $this->appDirectory = $this->getWorkingDir();
         }
 
@@ -98,7 +98,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getConfigDir(): string
     {
-        if (is_null($this->configDirectory)) {
+        if (null === $this->configDirectory) {
             $this->configDirectory = $this->getAppDir() . DIRECTORY_SEPARATOR . 'config';
         }
 
@@ -113,7 +113,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getVarDir(): string
     {
-        if (is_null($this->varDirectory)) {
+        if (null === $this->varDirectory) {
             $this->varDirectory = $this->getAppDir() . DIRECTORY_SEPARATOR . 'var';
         }
 
@@ -128,7 +128,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getCacheDir(): string
     {
-        if (is_null($this->cacheDirectory)) {
+        if (null === $this->cacheDirectory) {
             $this->cacheDirectory = $this->getVarDir() . DIRECTORY_SEPARATOR . 'cache';
         }
 
@@ -143,7 +143,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getLogDir(): string
     {
-        if (is_null($this->logDirectory)) {
+        if (null === $this->logDirectory) {
             $this->logDirectory = $this->getVarDir() . DIRECTORY_SEPARATOR . 'log';
         }
 
@@ -158,7 +158,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getDebugDir(): string
     {
-        if (is_null($this->debugDirectory)) {
+        if (null === $this->debugDirectory) {
             $this->debugDirectory = $this->getVarDir() . DIRECTORY_SEPARATOR . 'debug';
         }
 
@@ -173,7 +173,7 @@ class DefaultDirectories implements DirectoriesInterface
      */
     public function getVendorDir(): string
     {
-        if (is_null($this->vendorDirectory)) {
+        if (null === $this->vendorDirectory) {
             $this->vendorDirectory = $this->getAppDir() . DIRECTORY_SEPARATOR . 'vendor';
         }
 

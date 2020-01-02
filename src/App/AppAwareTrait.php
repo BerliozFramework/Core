@@ -53,6 +53,6 @@ trait AppAwareTrait
      */
     public function hasApp(): bool
     {
-        return !is_null($this->app);
+        return null !== $this->app;
     }
 }

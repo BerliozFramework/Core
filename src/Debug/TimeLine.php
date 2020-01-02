@@ -14,12 +14,14 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+use Countable;
+
 /**
  * Class TimeLine.
  *
  * @package Berlioz\Core\Debug
  */
-class TimeLine extends AbstractSection implements \Countable
+class TimeLine extends AbstractSection implements Countable
 {
     /** @var \Berlioz\Core\Debug\Activity[] Activities */
     private $activities;
@@ -104,7 +106,7 @@ class TimeLine extends AbstractSection implements \Countable
      * Order activities.
      *
      * @param \Berlioz\Core\Debug\Activity[] $activities
-     * @param string                         $orderBy Order by? Values: 'start', 'end' or 'duration'
+     * @param string $orderBy Order by? Values: 'start', 'end' or 'duration'
      */
     private function orderActivities(array &$activities, string $orderBy = 'start')
     {
@@ -161,7 +163,7 @@ class TimeLine extends AbstractSection implements \Countable
         $activities = [];
 
         foreach ($this->activities as $activity) {
-            if (is_null($group) || $activity->getGroup() == $group) {
+            if (null === $group || $activity->getGroup() == $group) {
                 $activities[] = $activity;
             }
         }
@@ -181,7 +183,7 @@ class TimeLine extends AbstractSection implements \Countable
         $firstTime = 0;
 
         foreach ($this->activities as $activity) {
-            if ((is_null($group) || $activity->getGroup() == $group) &&
+            if ((null === $group || $activity->getGroup() == $group) &&
                 ($activity->getStartMicroTime() < $firstTime || $firstTime == 0)) {
                 $firstTime = $activity->getStartMicroTime();
             }
@@ -202,7 +204,7 @@ class TimeLine extends AbstractSection implements \Countable
         $lastTime = 0;
 
         foreach ($this->activities as $activity) {
-            if ((is_null($group) || $activity->getGroup() == $group) &&
+            if ((null === $group || $activity->getGroup() == $group) &&
                 ($activity->getEndMicroTime() > $lastTime || $lastTime == 0)) {
                 $lastTime = $activity->getEndMicroTime();
             }
@@ -261,10 +263,12 @@ class TimeLine extends AbstractSection implements \Countable
                 $memory_peak_usage = $activity->getEndMemoryPeakUsage();
             }
 
-            $memoryUsages[] = ['from'        => $from,
-                               'to'          => $to,
-                               'memory'      => $memory_usage,
-                               'memory_peak' => $memory_peak_usage];
+            $memoryUsages[] = [
+                'from' => $from,
+                'to' => $to,
+                'memory' => $memory_usage,
+                'memory_peak' => $memory_peak_usage,
+            ];
         }
 
         return $memoryUsages;
@@ -282,7 +286,7 @@ class TimeLine extends AbstractSection implements \Countable
         $memoryUsage = 0;
 
         foreach ($this->activities as $activity) {
-            if ((is_null($group) || $activity->getGroup() == $group) &&
+            if ((null === $group || $activity->getGroup() == $group) &&
                 ($activity->getEndMemoryPeakUsage() > $memoryUsage || $memoryUsage == 0)) {
                 $memoryUsage = $activity->getEndMemoryPeakUsage();
             }

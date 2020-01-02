@@ -22,13 +22,15 @@ use Berlioz\Core\CoreAwareTrait;
 use Berlioz\Core\Debug;
 use Berlioz\Core\Exception\PackageException;
 use Berlioz\ServiceContainer\Instantiator;
+use Serializable;
+use Throwable;
 
 /**
  * Class PackageSet.
  *
  * @package Berlioz\Core\Package
  */
-class PackageSet implements \Serializable, CoreAwareInterface
+class PackageSet implements Serializable, CoreAwareInterface
 {
     use CoreAwareTrait;
     /** @var string[] Packages */
@@ -61,10 +63,10 @@ class PackageSet implements \Serializable, CoreAwareInterface
     {
         return [
             'packagesClasses' => $this->packagesClasses,
-            'packages'        => $this->packages,
-            'configured'      => $this->configured,
-            'registered'      => $this->registered,
-            'initialized'     => $this->initialized,
+            'packages' => $this->packages,
+            'configured' => $this->configured,
+            'registered' => $this->registered,
+            'initialized' => $this->initialized,
         ];
     }
 
@@ -77,11 +79,13 @@ class PackageSet implements \Serializable, CoreAwareInterface
      */
     public function serialize()
     {
-        return serialize([
-                             'packagesClasses' => $this->packagesClasses,
-                             'configured'      => $this->configured,
-                             'registered'      => $this->registered,
-                         ]);
+        return serialize(
+            [
+                'packagesClasses' => $this->packagesClasses,
+                'configured' => $this->configured,
+                'registered' => $this->registered,
+            ]
+        );
     }
 
     /**
@@ -137,13 +141,17 @@ class PackageSet implements \Serializable, CoreAwareInterface
      */
     public function addPackage(string $packageClass): PackageSet
     {
-        if (!in_array($packageClass, $this->packagesClasses)) {
-            if (!is_a($packageClass, PackageInterface::class, true)) {
-                throw new PackageException(sprintf('Class "%s" must implements "%s" interface', $packageClass, PackageInterface::class));
-            }
-
-            $this->packagesClasses[] = $packageClass;
+        if (in_array($packageClass, $this->packagesClasses)) {
+            return $this;
         }
+
+        if (!is_a($packageClass, PackageInterface::class, true)) {
+            throw new PackageException(
+                sprintf('Class "%s" must implements "%s" interface', $packageClass, PackageInterface::class)
+            );
+        }
+
+        $this->packagesClasses[] = $packageClass;
 
         return $this;
     }
@@ -187,7 +195,7 @@ class PackageSet implements \Serializable, CoreAwareInterface
             }
 
             return $this;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new PackageException('Unable to load packages from configuration', 0, $e);
         }
     }
@@ -213,7 +221,7 @@ class PackageSet implements \Serializable, CoreAwareInterface
             }
 
             return $this;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new PackageException('Unable to load packages from composer', 0, $e);
         }
     }
@@ -244,7 +252,7 @@ class PackageSet implements \Serializable, CoreAwareInterface
                 $config = $package::config();
 
                 // No configuration
-                if (is_null($config)) {
+                if (null === $config) {
                     continue;
                 }
 
@@ -266,9 +274,11 @@ class PackageSet implements \Serializable, CoreAwareInterface
                     continue;
                 }
 
-                throw new PackageException('Configuration of package must be a ConfigInterface, an array, a filename, or null');
+                throw new PackageException(
+                    'Configuration of package must be a ConfigInterface, an array, a filename, or null'
+                );
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new PackageException('Error during registration of packages', 0, $e);
         } finally {
             $this->getCore()->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
@@ -301,7 +311,7 @@ class PackageSet implements \Serializable, CoreAwareInterface
                 $package::register($this->getCore());
                 $this->registered[] = $package;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new PackageException('Error during registration of packages', 0, $e);
         } finally {
             $this->getCore()->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
@@ -324,20 +334,22 @@ class PackageSet implements \Serializable, CoreAwareInterface
     {
         try {
             foreach ($this->packagesClasses as $packageClass) {
-                if (!array_key_exists($packageClass, $this->packages)) {
-                    /** @var \Berlioz\Core\Package\PackageInterface $package */
-                    $this->packages[$packageClass] =
-                    $package = $instantiator->newInstanceOf($packageClass);
+                if (array_key_exists($packageClass, $this->packages)) {
+                    continue;
+                }
 
-                    // Set Core to the package
-                    if (is_null($package->getCore())) {
-                        $package->setCore($this->getCore());
-                    }
+                /** @var \Berlioz\Core\Package\PackageInterface $package */
+                $this->packages[$packageClass] =
+                $package = $instantiator->newInstanceOf($packageClass);
+
+                // Set Core to the package
+                if (null === $package->getCore()) {
+                    $package->setCore($this->getCore());
                 }
             }
 
             return $this;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new PackageException('Unable to instantiate packages', 0, $e);
         }
     }
@@ -365,7 +377,7 @@ class PackageSet implements \Serializable, CoreAwareInterface
                 $package->init();
                 $this->initialized[] = $class;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new PackageException('Error during initialization of packages', 0, $e);
         } finally {
             $this->getCore()->getDebug()->getTimeLine()->addActivity($packagesActivity->end());

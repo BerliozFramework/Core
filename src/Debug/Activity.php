@@ -49,7 +49,7 @@ class Activity
     /**
      * Activity constructor.
      *
-     * @param string      $name
+     * @param string $name
      * @param null|string $group
      */
     public function __construct(string $name, string $group = 'Application')
@@ -229,21 +229,24 @@ class Activity
      * Start activity.
      *
      * @param float|null $startMicroTime
-     * @param int|null   $startMemoryUsage     Memory usage, default: memory_get_usage()
-     * @param int|null   $startMemoryPeakUsage Memory peak usage, default: memory_get_peak_usage()
+     * @param int|null $startMemoryUsage Memory usage, default: memory_get_usage()
+     * @param int|null $startMemoryPeakUsage Memory peak usage, default: memory_get_peak_usage()
      *
      * @return static
      */
-    public function start(?float $startMicroTime = null, ?int $startMemoryUsage = null, ?int $startMemoryPeakUsage = null): Activity
-    {
-        if (is_null($startMicroTime)) {
+    public function start(
+        ?float $startMicroTime = null,
+        ?int $startMemoryUsage = null,
+        ?int $startMemoryPeakUsage = null
+    ): Activity {
+        if (null === $startMicroTime) {
             $startMicroTime = microtime(true);
         }
 
-        if (is_null($startMemoryUsage)) {
+        if (null === $startMemoryUsage) {
             $startMemoryUsage = memory_get_usage();
         }
-        if (is_null($startMemoryPeakUsage)) {
+        if (null === $startMemoryPeakUsage) {
             $startMemoryPeakUsage = memory_get_peak_usage();
         }
 
@@ -258,21 +261,24 @@ class Activity
      * End activity.
      *
      * @param float|null $endMicroTime
-     * @param int|null   $endMemoryUsage     Memory usage, default: memory_get_usage()
-     * @param int|null   $endMemoryPeakUsage Memory peak usage, default: memory_get_peak_usage()
+     * @param int|null $endMemoryUsage Memory usage, default: memory_get_usage()
+     * @param int|null $endMemoryPeakUsage Memory peak usage, default: memory_get_peak_usage()
      *
      * @return static
      */
-    public function end(?float $endMicroTime = null, ?int $endMemoryUsage = null, ?int $endMemoryPeakUsage = null): Activity
-    {
-        if (is_null($endMicroTime)) {
+    public function end(
+        ?float $endMicroTime = null,
+        ?int $endMemoryUsage = null,
+        ?int $endMemoryPeakUsage = null
+    ): Activity {
+        if (null === $endMicroTime) {
             $endMicroTime = microtime(true);
         }
 
-        if (is_null($endMemoryUsage)) {
+        if (null === $endMemoryUsage) {
             $endMemoryUsage = memory_get_usage();
         }
-        if (is_null($endMemoryPeakUsage)) {
+        if (null === $endMemoryPeakUsage) {
             $endMemoryPeakUsage = memory_get_peak_usage();
         }
 
@@ -290,7 +296,7 @@ class Activity
      */
     public function duration(): ?float
     {
-        if (is_null($this->startMicroTime) || is_null($this->endMicroTime)) {
+        if (null === $this->startMicroTime || null === $this->endMicroTime) {
             return null;
         }
 
