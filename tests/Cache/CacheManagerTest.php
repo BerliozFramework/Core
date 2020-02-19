@@ -23,7 +23,7 @@ class CacheManagerTest extends TestCase
     private $directories;
     private $cacheManager;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->directories = new DefaultDirectories();
         $this->cacheManager = new CacheManager($this->directories);
