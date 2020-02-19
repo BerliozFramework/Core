@@ -23,7 +23,7 @@ use Berlioz\Core\Exception\AssetException;
  */
 class Manifest extends JsonAsset
 {
-    const JSON_DEPTH = 2;
+    protected const JSON_DEPTH = 2;
 
     /**
      * Has asset?

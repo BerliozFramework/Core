@@ -29,7 +29,7 @@ use Psr\SimpleCache\CacheInterface;
  */
 class CacheManager implements CacheInterface
 {
-    const CACHE_DIRECTORY = 'berlioz';
+    protected const CACHE_DIRECTORY = 'berlioz';
     /** @var \Berlioz\Core\Directories\DirectoriesInterface */
     private $directories;
 

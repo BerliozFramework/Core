@@ -420,7 +420,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
         $containerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
 
         try {
-            $this->serviceContainer = new ServiceContainer;
+            $this->serviceContainer = new ServiceContainer();
             $servicesConfig = $this->getConfig()->get('services', []);
 
             // Add services from configuration

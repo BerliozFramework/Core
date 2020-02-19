@@ -67,14 +67,14 @@ class Debug implements CoreAwareInterface, Serializable
         try {
             $this->setCore($core);
             $this->uniqid = uniqid();
-            $this->datetime = new DateTime;
+            $this->datetime = new DateTime();
 
             $this->systemInfo = [];
             $this->phpInfo = [];
             $this->performancesInfo = [];
             $this->projectInfo = [];
-            $this->timeLine = new TimeLine;
-            $this->phpError = (new PhpError)->handle();
+            $this->timeLine = new TimeLine();
+            $this->phpError = (new PhpError())->handle();
             $this->sections = [];
         } catch (Throwable $e) {
             throw new BerliozException('Unable to init Debug class', 0, $e);
@@ -112,14 +112,14 @@ class Debug implements CoreAwareInterface, Serializable
         $unserialized = unserialize($serialized);
 
         $this->uniqid = $unserialized['uniqid'] ?? uniqid();
-        $this->datetime = $unserialized['datetime'] ?? new DateTime;
+        $this->datetime = $unserialized['datetime'] ?? new DateTime();
         $this->systemInfo = $unserialized['systemInfo'] ?? [];
         $this->phpInfo = $unserialized['phpInfo'] ?? [];
         $this->performancesInfo = $unserialized['performancesInfo'] ?? [];
         $this->projectInfo = $unserialized['projectInfo'] ?? [];
         $this->config = $unserialized['config'] ?? [];
-        $this->timeLine = $unserialized['timeLine'] ?? new TimeLine;
-        $this->phpError = $unserialized['phpError'] ?? new PhpError;
+        $this->timeLine = $unserialized['timeLine'] ?? new TimeLine();
+        $this->phpError = $unserialized['phpError'] ?? new PhpError();
         $this->exception = $unserialized['exception'] ?? null;
         $this->sections = $unserialized['sections'] ?? [];
     }

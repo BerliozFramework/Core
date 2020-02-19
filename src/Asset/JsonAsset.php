@@ -23,7 +23,7 @@ use Berlioz\Core\Exception\AssetException;
  */
 abstract class JsonAsset
 {
-    const JSON_DEPTH = 512;
+    protected const JSON_DEPTH = 512;
     /** @var string Filename */
     protected $filename;
     /** @var array Assets */
