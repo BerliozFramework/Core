@@ -19,7 +19,6 @@ use Berlioz\Config\ExtendedJsonConfig;
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
 use Berlioz\Core\CoreAwareTrait;
-use Berlioz\Core\Debug;
 use Berlioz\Core\Exception\PackageException;
 use Berlioz\ServiceContainer\Instantiator;
 use Serializable;
@@ -244,7 +243,7 @@ class PackageSet implements Serializable, CoreAwareInterface
         }
 
         // Debug
-        $packagesActivity = (new Debug\Activity('Packages (configuration)', 'Berlioz'))->start();
+        $packagesActivity = $this->getCore()->getDebug()->newActivity('Packages (configuration)', 'Berlioz')->start();
 
         try {
             /** * @var \Berlioz\Core\Package\PackageInterface $package */
@@ -281,7 +280,7 @@ class PackageSet implements Serializable, CoreAwareInterface
         } catch (Throwable $e) {
             throw new PackageException('Error during registration of packages', 0, $e);
         } finally {
-            $this->getCore()->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
+            $packagesActivity->end();
         }
 
         $this->configured = true;
@@ -303,7 +302,7 @@ class PackageSet implements Serializable, CoreAwareInterface
         }
 
         // Debug
-        $packagesActivity = (new Debug\Activity('Packages (registration)', 'Berlioz'))->start();
+        $packagesActivity = $this->getCore()->getDebug()->newActivity('Packages (registration)', 'Berlioz')->start();
 
         try {
             /** * @var \Berlioz\Core\Package\PackageInterface $package */
@@ -314,7 +313,7 @@ class PackageSet implements Serializable, CoreAwareInterface
         } catch (Throwable $e) {
             throw new PackageException('Error during registration of packages', 0, $e);
         } finally {
-            $this->getCore()->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
+            $packagesActivity->end();
         }
 
         $this->registered = true;
@@ -368,7 +367,7 @@ class PackageSet implements Serializable, CoreAwareInterface
         }
 
         // Debug
-        $packagesActivity = (new Debug\Activity('Packages (initialization)', 'Berlioz'))->start();
+        $packagesActivity = $this->getCore()->getDebug()->newActivity('Packages (initialization)', 'Berlioz')->start();
 
         try {
             $this->instantiate($this->getCore()->getServiceContainer()->getInstantiator());
@@ -380,7 +379,7 @@ class PackageSet implements Serializable, CoreAwareInterface
         } catch (Throwable $e) {
             throw new PackageException('Error during initialization of packages', 0, $e);
         } finally {
-            $this->getCore()->getDebug()->getTimeLine()->addActivity($packagesActivity->end());
+            $packagesActivity->end();
         }
 
         $this->initialized = true;

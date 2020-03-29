@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Berlioz\Core;
 
+use Berlioz\Core\Debug\Activity;
 use Berlioz\Core\Debug\PhpError;
 use Berlioz\Core\Debug\Section;
 use Berlioz\Core\Debug\TimeLine;
@@ -321,6 +322,21 @@ class Debug implements CoreAwareInterface, Serializable
     public function getTimeLine(): TimeLine
     {
         return $this->timeLine;
+    }
+
+    /**
+     * New time line activity.
+     *
+     * @param string $name
+     * @param string $group
+     *
+     * @return \Berlioz\Core\Debug\Activity
+     */
+    public function newActivity(string $name, string $group = 'Application'): Activity
+    {
+        $this->getTimeLine()->addActivity($activity = new Activity($name, $group));
+
+        return $activity;
     }
 
     /**

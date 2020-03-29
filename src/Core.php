@@ -70,19 +70,15 @@ class Core implements ServiceContainerAwareInterface, Serializable
     {
         // Debug
         if ($_SERVER['REQUEST_TIME_FLOAT']) {
-            $this->getDebug()
-                ->getTimeLine()
-                ->addActivity(
-                    (new Debug\Activity('PHP initialization', 'Berlioz'))
-                        ->start($_SERVER['REQUEST_TIME_FLOAT'])
-                        ->end()
-                );
+            $this
+                ->getDebug()
+                ->newActivity('PHP initialization', 'Berlioz')
+                ->start($_SERVER['REQUEST_TIME_FLOAT'])
+                ->end();
         }
 
         // Debug
-        $this->getDebug()->getTimeLine()->addActivity(
-            $berliozActivity = (new Debug\Activity('Start', 'Berlioz'))->start()
-        );
+        $berliozActivity = $this->getDebug()->newActivity('Start', 'Berlioz')->start();
 
         // Directories
         $this->directories = $directories;
@@ -144,7 +140,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
      */
     protected function loadCache(): bool
     {
-        $cacheActivity = (new Debug\Activity('Cache (load)', 'Berlioz'))->start();
+        $cacheActivity = $this->getDebug()->newActivity('Cache (load)', 'Berlioz')->start();
 
         try {
             // No cache manager?
@@ -165,7 +161,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
 
             return true;
         } finally {
-            $this->getDebug()->getTimeLine()->addActivity($cacheActivity->end());
+            $cacheActivity->end();
         }
     }
 
@@ -178,7 +174,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
      */
     protected function saveCache(): bool
     {
-        $cacheActivity = (new Debug\Activity('Cache (saving)', 'Berlioz'))->start();
+        $cacheActivity = $this->getDebug()->newActivity('Cache (saving)', 'Berlioz')->start();
 
         try {
             // No cache manager?
@@ -198,7 +194,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
                         ]
                     );
         } finally {
-            $this->getDebug()->getTimeLine()->addActivity($cacheActivity->end());
+            $cacheActivity->end();
         }
     }
 
@@ -284,13 +280,13 @@ class Core implements ServiceContainerAwareInterface, Serializable
      */
     private function terminate()
     {
-        $coreActivity = (new Debug\Activity('Core terminate', 'Berlioz'))->start();
+        $coreActivity = $this->getDebug()->newActivity('Core terminate', 'Berlioz')->start();
 
         foreach ($this->terminateCallbacks as $terminateCallback) {
             $terminateCallback($this);
         }
 
-        $this->getDebug()->getTimeLine()->addActivity($coreActivity->end());
+        $coreActivity->end();
 
         // Save debug report if debug enabled
         if ($this->getDebug()->isEnabled()) {
@@ -346,7 +342,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
      */
     protected function initConfig(): ConfigInterface
     {
-        $configActivity = (new Debug\Activity('Configuration', 'Berlioz'))->start();
+        $configActivity = $this->getDebug()->newActivity('Configuration', 'Berlioz')->start();
 
         try {
             // Create configuration (from default configuration)
@@ -388,7 +384,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
         } catch (Throwable $e) {
             throw new BerliozException('Configuration error', 0, $e);
         } finally {
-            $this->getDebug()->getTimeLine()->addActivity($configActivity->end());
+            $configActivity->end();
         }
 
         return $this->config;
@@ -417,7 +413,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
      */
     public function initServiceContainer()
     {
-        $containerActivity = (new Debug\Activity('Service container (initialization)', 'Berlioz'))->start();
+        $containerActivity = $this->getDebug()->newActivity('Service container (initialization)', 'Berlioz')->start();
 
         try {
             $this->serviceContainer = new ServiceContainer();
@@ -466,7 +462,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
         } catch (ConfigException $e) {
             throw new BerliozException('Configuration error', 0, $e);
         } finally {
-            $this->getDebug()->getTimeLine()->addActivity($containerActivity->end());
+            $containerActivity->end();
         }
     }
 
