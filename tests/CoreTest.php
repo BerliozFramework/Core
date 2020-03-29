@@ -16,10 +16,10 @@ use Berlioz\Config\ConfigInterface;
 use Berlioz\Core\Composer;
 use Berlioz\Core\Core;
 use Berlioz\Core\Debug;
-use Berlioz\Core\Directories\DefaultDirectories;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Package\PackageSet;
+use Berlioz\Core\Tests\Directories\FakeDefaultDirectories;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
 
@@ -27,7 +27,7 @@ class CoreTest extends TestCase
 {
     public function provider()
     {
-        $directories = new DefaultDirectories();
+        $directories = new FakeDefaultDirectories();
         $core = new Core($directories, true);
         $core2 = new Core($directories, false);
 
@@ -36,7 +36,7 @@ class CoreTest extends TestCase
 
     public function test__construct()
     {
-        $directories = new DefaultDirectories();
+        $directories = new FakeDefaultDirectories();
         $core = new Core($directories, false);
         $core2 = new Core($directories, true);
 

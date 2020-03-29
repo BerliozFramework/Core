@@ -24,54 +24,71 @@ class DefaultDirectoriesTest extends TestCase
 
     private function getDefaultDirectories(): DefaultDirectories
     {
-        return new DefaultDirectories();
+        chdir($workingDirectory = realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public'));
+        return new FakeDefaultDirectories();
     }
 
     public function testGetWorkingDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public'),
-                            $this->getDefaultDirectories()->getWorkingDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public'),
+            $this->getDefaultDirectories()->getWorkingDir()
+        );
     }
 
     public function testGetVarDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var'),
-                            $this->getDefaultDirectories()->getVarDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var'),
+            $this->getDefaultDirectories()->getVarDir()
+        );
     }
 
     public function testGetDebugDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'debug'),
-                            $this->getDefaultDirectories()->getDebugDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'debug'),
+            $this->getDefaultDirectories()->getDebugDir()
+        );
     }
 
     public function testGetCacheDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache'),
-                            $this->getDefaultDirectories()->getCacheDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache'),
+            $this->getDefaultDirectories()->getCacheDir()
+        );
     }
 
     public function testGetLogDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'log'),
-                            $this->getDefaultDirectories()->getLogDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'log'),
+            $this->getDefaultDirectories()->getLogDir()
+        );
     }
 
     public function testGetConfigDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'config'),
-                            $this->getDefaultDirectories()->getConfigDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'config'),
+            $this->getDefaultDirectories()->getConfigDir()
+        );
     }
 
     public function testGetAppDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory()),
-                            $this->getDefaultDirectories()->getAppDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory()),
+            $this->getDefaultDirectories()->getAppDir()
+        );
     }
 
     public function testGetVendorDir()
     {
-        $this->assertEquals(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'vendor'),
-                            $this->getDefaultDirectories()->getVendorDir());
+        $this->assertEquals(
+            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'vendor'),
+            $this->getDefaultDirectories()->getVendorDir()
+        );
     }
 }

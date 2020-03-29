@@ -57,6 +57,22 @@ class DefaultDirectories implements DirectoriesInterface
     }
 
     /**
+     * Get library directory.
+     *
+     * @return string
+     * @throws \Berlioz\Core\Exception\BerliozException
+     */
+    protected function getLibraryDirectory(): string
+    {
+        $myComposerFilename = realpath(__DIR__ . '/../../composer.json');
+        if (false === $myComposerFilename) {
+            throw new BerliozException('Unable to find composer.json file of Core library');
+        }
+
+        return dirname($myComposerFilename);
+    }
+
+    /**
      * @inheritdoc
      * @throws \Berlioz\Core\Exception\BerliozException
      */
@@ -66,21 +82,16 @@ class DefaultDirectories implements DirectoriesInterface
             return $this->appDirectory;
         }
 
-        $myComposerFilename = realpath(__DIR__ . '/../../composer.json');
-
         // Search composer.json for app directory
-        $directory = $this->getWorkingDir();
+        $directory = $this->getLibraryDirectory();
         do {
             $directoryBefore = $directory;
+            $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
 
             if (file_exists($composerFilename = $directory . DIRECTORY_SEPARATOR . 'composer.json')) {
-                if ($composerFilename != $myComposerFilename) {
-                    $this->appDirectory = $directory;
-                    break;
-                }
+                $this->appDirectory = $directory;
+                break;
             }
-
-            $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
         } while ($directory !== false && $directoryBefore != $directory);
 
         if (null === $this->appDirectory) {
