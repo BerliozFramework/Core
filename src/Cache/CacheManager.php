@@ -50,10 +50,14 @@ class CacheManager implements CacheInterface
      *
      * @throws \Berlioz\Core\Exception\InvalidArgumentCacheException
      */
-    private function controlKey($key)
+    protected function controlKey($key)
     {
-        if (!(is_string($key) && $key !== '')) {
-            throw new InvalidArgumentCacheException(sprintf('Invalid key name for cache'));
+        if (!is_string($key)) {
+            throw new InvalidArgumentCacheException('Invalid key name for cache, must be string');
+        }
+
+        if ('' === trim($key)) {
+            throw new InvalidArgumentCacheException('Invalid key name for cache, must be not empty');
         }
     }
 
