@@ -83,16 +83,19 @@ class DefaultDirectories implements DirectoriesInterface
         }
 
         // Search composer.json for app directory
-        $directory = $this->getLibraryDirectory();
+        $directories = [$this->getLibraryDirectory(), dirname($_SERVER['SCRIPT_FILENAME'])];
         do {
-            $directoryBefore = $directory;
-            $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
+            $directory = current($directories);
+            do {
+                $directoryBefore = $directory;
+                $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
 
-            if (file_exists($composerFilename = $directory . DIRECTORY_SEPARATOR . 'composer.json')) {
-                $this->appDirectory = $directory;
-                break;
-            }
-        } while ($directory !== false && $directoryBefore != $directory);
+                if (file_exists($composerFilename = $directory . DIRECTORY_SEPARATOR . 'composer.json')) {
+                    $this->appDirectory = $directory;
+                    break(2);
+                }
+            } while ($directory !== false && $directoryBefore != $directory);
+        } while (next($directories));
 
         if (null === $this->appDirectory) {
             $this->appDirectory = $this->getWorkingDir();
