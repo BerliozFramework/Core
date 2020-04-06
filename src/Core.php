@@ -265,6 +265,7 @@ class Core implements ServiceContainerAwareInterface, Serializable
             // Add default services to container
             $this->getServiceContainer()->add(new Service($this, 'berlioz'));
             $this->getServiceContainer()->add(new Service($this->getConfig(), 'config'));
+            $this->getServiceContainer()->add(new Service($this->getDirectories(), 'directories'));
 
             // Packages
             $this->getPackages()->init();
