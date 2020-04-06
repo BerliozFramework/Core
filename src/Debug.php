@@ -137,10 +137,21 @@ class Debug implements CoreAwareInterface, Serializable
         }
 
         try {
-            $debug = $this->getCore()->getConfig()->get('berlioz.debug', false);
+            $debug = $this->getCore()->getConfig()->get('berlioz.debug.enable', false);
 
-            if (is_bool($debug)) {
-                return $this->enabled = $debug;
+            if (!is_bool($debug) || false === $debug) {
+                return $this->enabled = false;
+            }
+
+            // Get ip addresses from config
+            $ipAddresses = $debug = $this->getCore()->getConfig()->get('berlioz.debug.ip', []);
+            if (!is_array($ipAddresses)) {
+                return $this->enabled = false;
+            }
+
+            // No ip restriction
+            if (empty($ipAddresses)) {
+                return $this->enabled = true;
             }
 
             // Get ip
@@ -151,12 +162,12 @@ class Debug implements CoreAwareInterface, Serializable
             }
 
             // Find ip
-            if (in_array($ipAddress, $debug)) {
+            if (in_array($ipAddress, $ipAddresses)) {
                 return $this->enabled = true;
             }
 
             // Find host
-            if (in_array(gethostbyaddr($ipAddress), $debug)) {
+            if (in_array(gethostbyaddr($ipAddress), $ipAddresses)) {
                 return $this->enabled = true;
             }
 

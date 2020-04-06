@@ -1,6 +1,9 @@
 {
   "berlioz": {
-    "debug": false,
+    "debug": {
+      "enable": false,
+      "ip": []
+    },
     "directories": {
       "var": "%berlioz.directories.app%/var",
       "debug": "%berlioz.directories.var%/debug",
