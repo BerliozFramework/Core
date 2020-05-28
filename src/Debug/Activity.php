@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -164,9 +164,9 @@ class Activity
     /**
      * Get start micro time.
      *
-     * @return float
+     * @return float|null
      */
-    public function getStartMicroTime(): float
+    public function getStartMicroTime(): ?float
     {
         return $this->startMicroTime;
     }
@@ -174,9 +174,9 @@ class Activity
     /**
      * Get start memory usage.
      *
-     * @return int
+     * @return int|null
      */
-    public function getStartMemoryUsage(): int
+    public function getStartMemoryUsage(): ?int
     {
         return $this->startMemoryUsage;
     }
@@ -184,9 +184,9 @@ class Activity
     /**
      * Get start memory peak usage.
      *
-     * @return int
+     * @return int|null
      */
-    public function getStartMemoryPeakUsage(): int
+    public function getStartMemoryPeakUsage(): ?int
     {
         return $this->startMemoryPeakUsage;
     }
@@ -194,9 +194,9 @@ class Activity
     /**
      * Get end micro time.
      *
-     * @return float
+     * @return float|null
      */
-    public function getEndMicroTime(): float
+    public function getEndMicroTime(): ?float
     {
         return $this->endMicroTime;
     }
@@ -204,9 +204,9 @@ class Activity
     /**
      * Get end memory usage.
      *
-     * @return int
+     * @return int|null
      */
-    public function getEndMemoryUsage(): int
+    public function getEndMemoryUsage(): ?int
     {
         return $this->endMemoryUsage;
     }
@@ -214,9 +214,9 @@ class Activity
     /**
      * Get end memory peak usage.
      *
-     * @return int
+     * @return int|null
      */
-    public function getEndMemoryPeakUsage(): int
+    public function getEndMemoryPeakUsage(): ?int
     {
         return $this->endMemoryPeakUsage;
     }

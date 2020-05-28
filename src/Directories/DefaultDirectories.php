@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -42,7 +42,7 @@ class DefaultDirectories implements DirectoriesInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getWorkingDir(): string
     {
@@ -60,7 +60,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get library directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     protected function getLibraryDirectory(): string
     {
@@ -74,7 +74,7 @@ class DefaultDirectories implements DirectoriesInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getAppDir(): string
     {
@@ -108,7 +108,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get config directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getConfigDir(): string
     {
@@ -123,7 +123,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get var directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getVarDir(): string
     {
@@ -138,7 +138,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get cache directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getCacheDir(): string
     {
@@ -153,7 +153,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get log directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getLogDir(): string
     {
@@ -168,7 +168,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get debug directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getDebugDir(): string
     {
@@ -183,7 +183,7 @@ class DefaultDirectories implements DirectoriesInterface
      * Get vendor directory.
      *
      * @return string
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getVendorDir(): string
     {

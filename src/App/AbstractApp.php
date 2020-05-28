@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -18,6 +18,8 @@ use Berlioz\Core\Asset\Assets;
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
 use Berlioz\Core\CoreAwareTrait;
+use Berlioz\Core\Exception\BerliozException;
+use Berlioz\ServiceContainer\Exception\ContainerException;
 use Berlioz\ServiceContainer\Service;
 
 /**
@@ -32,10 +34,10 @@ abstract class AbstractApp implements CoreAwareInterface
     /**
      * AbstractApp constructor.
      *
-     * @param \Berlioz\Core\Core|null $core
+     * @param Core|null $core
      *
-     * @throws \Berlioz\Core\Exception\BerliozException
-     * @throws \Berlioz\ServiceContainer\Exception\ContainerException
+     * @throws BerliozException
+     * @throws ContainerException
      */
     public function __construct(?Core $core = null)
     {
@@ -50,19 +52,12 @@ abstract class AbstractApp implements CoreAwareInterface
     }
 
     /**
-     * AbstractApp destructor.
-     */
-    public function __destruct()
-    {
-    }
-
-    /**
      * Get service.
      *
      * @param string $id
      *
      * @return mixed
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws BerliozException
      */
     public function getService(string $id)
     {
@@ -72,8 +67,8 @@ abstract class AbstractApp implements CoreAwareInterface
     /**
      * Get assets.
      *
-     * @return \Berlioz\Core\Asset\Assets
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @return Assets
+     * @throws BerliozException
      */
     public function getAssets(): Assets
     {

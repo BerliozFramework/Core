@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -15,6 +15,7 @@ namespace Berlioz\Core\Tests\Cache;
 use Berlioz\Core\Cache\CacheManager;
 use Berlioz\Core\Directories\DefaultDirectories;
 use Berlioz\Core\Directories\DirectoriesInterface;
+use Berlioz\Core\Tests\Directories\FakeDefaultDirectories;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheException;
 
@@ -25,7 +26,7 @@ class CacheManagerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->directories = new DefaultDirectories();
+        $this->directories = new FakeDefaultDirectories();
         $this->cacheManager = new CacheManager($this->directories);
     }
 

@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -24,15 +24,7 @@ use Countable;
 class PhpError extends AbstractSection implements Countable
 {
     /** @var array PHP errors */
-    private $phpErrors;
-
-    /**
-     * PhpError constructor.
-     */
-    public function __construct()
-    {
-        $this->phpErrors = [];
-    }
+    private $phpErrors = [];
 
     /////////////////////////
     /// SECTION INTERFACE ///
@@ -89,7 +81,7 @@ class PhpError extends AbstractSection implements Countable
     /**
      * Handle.
      *
-     * @return \Berlioz\Core\Debug\PhpError
+     * @return PhpError
      */
     public function handle(): PhpError
     {

@@ -1,0 +1,35 @@
+{
+  "services": {
+    "foo": "Berlioz\\Core\\TestProject\\ServiceFoo",
+    "bar": {
+      "class": "Berlioz\\Core\\TestProject\\ServiceBar",
+      "arguments": {
+        "quux": "foo"
+      }
+    },
+    "qux": {
+      "class": "Berlioz\\Core\\TestProject\\ServiceQux",
+      "arguments": {
+        "quux": "foo"
+      },
+      "calls": [
+        {
+          "method": "inc",
+          "arguments": {
+            "increment": 4
+          }
+        },
+        {
+          "method": "inc",
+          "arguments": {
+            "increment": 2
+          }
+        }
+      ]
+    },
+    "quux": {
+      "class": "Berlioz\\Core\\TestProject\\ServiceQuux",
+      "factory": "Berlioz\\Core\\TestProject\\ServiceQuux::factory"
+    }
+  }
+}

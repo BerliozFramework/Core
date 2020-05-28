@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -38,7 +38,7 @@ class Composer implements Serializable
      *
      * @param string $composerJsonFilename
      *
-     * @throws \Berlioz\Core\Exception\ComposerException
+     * @throws ComposerException
      */
     public function __construct(string $composerJsonFilename)
     {
@@ -85,7 +85,7 @@ class Composer implements Serializable
     /**
      * Init.
      *
-     * @throws \Berlioz\Core\Exception\ComposerException
+     * @throws ComposerException
      */
     private function init(): void
     {
@@ -129,7 +129,7 @@ class Composer implements Serializable
      * @param string $packageName
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\ComposerException
+     * @throws ComposerException
      */
     private function loadPackageJson(string $packageName): array
     {
@@ -165,7 +165,7 @@ class Composer implements Serializable
      * @param string $jsonFile JSON file
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\ComposerException
+     * @throws ComposerException
      */
     private function loadJsonFile(string $jsonFile): array
     {
@@ -211,7 +211,7 @@ class Composer implements Serializable
      * @param string $name
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\ComposerException
+     * @throws ComposerException
      */
     public function getPackage(string $name): array
     {
@@ -246,7 +246,7 @@ class Composer implements Serializable
      * Get packages.
      *
      * @return array
-     * @throws \Berlioz\Core\Exception\ComposerException
+     * @throws ComposerException
      */
     public function getPackages(): array
     {

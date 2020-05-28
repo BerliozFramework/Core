@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -31,7 +31,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetWorkingDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public',
             $this->getDefaultDirectories()->getWorkingDir()
         );
     }
@@ -39,7 +39,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetVarDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var',
             $this->getDefaultDirectories()->getVarDir()
         );
     }
@@ -47,7 +47,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetDebugDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'debug'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'debug',
             $this->getDefaultDirectories()->getDebugDir()
         );
     }
@@ -55,7 +55,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetCacheDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache',
             $this->getDefaultDirectories()->getCacheDir()
         );
     }
@@ -63,7 +63,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetLogDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'log'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'log',
             $this->getDefaultDirectories()->getLogDir()
         );
     }
@@ -71,7 +71,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetConfigDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'config'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'config',
             $this->getDefaultDirectories()->getConfigDir()
         );
     }
@@ -79,7 +79,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetAppDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory()),
+            $this->getAppDirectory(),
             $this->getDefaultDirectories()->getAppDir()
         );
     }
@@ -87,7 +87,7 @@ class DefaultDirectoriesTest extends TestCase
     public function testGetVendorDir()
     {
         $this->assertEquals(
-            realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'vendor'),
+            $this->getAppDirectory() . DIRECTORY_SEPARATOR . 'vendor',
             $this->getDefaultDirectories()->getVendorDir()
         );
     }

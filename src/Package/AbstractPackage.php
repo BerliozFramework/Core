@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -27,25 +27,6 @@ abstract class AbstractPackage implements PackageInterface
 {
     use CoreAwareTrait;
 
-    /////////////////////
-    /// SERIALIZATION ///
-    /////////////////////
-
-    /**
-     * @inheritdoc
-     */
-    final public function serialize()
-    {
-        return serialize([]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    final public function unserialize($serialized)
-    {
-    }
-
     ///////////////
     /// PACKAGE ///
     ///////////////
@@ -68,11 +49,10 @@ abstract class AbstractPackage implements PackageInterface
     /**
      * Add new service to the service container.
      *
-     * @param \Berlioz\Core\Core $core
-     * @param \Berlioz\ServiceContainer\Service $service
+     * @param Core $core
+     * @param Service $service
      *
      * @return void
-     * @throws \Berlioz\Core\Exception\BerliozException
      */
     protected static function addService(Core $core, Service $service): void
     {

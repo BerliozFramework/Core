@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -15,10 +15,10 @@ declare(strict_types=1);
 namespace Berlioz\Core\Package;
 
 use Berlioz\Config\ConfigInterface;
+use Berlioz\Config\Exception\ConfigException;
 use Berlioz\Config\ExtendedJsonConfig;
-use Berlioz\Core\Core;
-use Berlioz\Core\CoreAwareInterface;
-use Berlioz\Core\CoreAwareTrait;
+use Berlioz\Core\Composer;
+use Berlioz\Core\Exception\ComposerException;
 use Berlioz\Core\Exception\PackageException;
 use Berlioz\ServiceContainer\Instantiator;
 use Serializable;
@@ -29,29 +29,12 @@ use Throwable;
  *
  * @package Berlioz\Core\Package
  */
-class PackageSet implements Serializable, CoreAwareInterface
+class PackageSet implements Serializable
 {
-    use CoreAwareTrait;
     /** @var string[] Packages */
     private $packagesClasses = [];
-    /** @var \Berlioz\Core\Package\PackageInterface[] Packages instances */
+    /** @var PackageInterface[] Packages instances */
     private $packages = [];
-    /** @var bool Packages configured? */
-    private $configured = false;
-    /** @var bool Packages registered? */
-    private $registered = false;
-    /** @var bool Packages initialized? */
-    private $initialized = false;
-
-    /**
-     * PackageSet constructor.
-     *
-     * @param \Berlioz\Core\Core $core
-     */
-    public function __construct(Core $core)
-    {
-        $this->setCore($core);
-    }
 
     /**
      * Magic method __debugInfo().
@@ -63,9 +46,6 @@ class PackageSet implements Serializable, CoreAwareInterface
         return [
             'packagesClasses' => $this->packagesClasses,
             'packages' => $this->packages,
-            'configured' => $this->configured,
-            'registered' => $this->registered,
-            'initialized' => $this->initialized,
         ];
     }
 
@@ -81,8 +61,6 @@ class PackageSet implements Serializable, CoreAwareInterface
         return serialize(
             [
                 'packagesClasses' => $this->packagesClasses,
-                'configured' => $this->configured,
-                'registered' => $this->registered,
             ]
         );
     }
@@ -95,25 +73,6 @@ class PackageSet implements Serializable, CoreAwareInterface
         $unserialized = unserialize($serialized);
 
         $this->packagesClasses = $unserialized['packagesClasses'] ?? [];
-        $this->configured = $unserialized['configured'] ?? [];
-        $this->registered = $unserialized['registered'] ?? [];
-    }
-
-    //////////////////////////
-    /// CoreAwareInterface ///
-    //////////////////////////
-
-    /**
-     * @inheritdoc
-     */
-    public function setCore(Core $core)
-    {
-        $this->core = $core;
-
-        /** @var \Berlioz\Core\Package\PackageInterface $package */
-        foreach ($this->packages as $package) {
-            $package->setCore($core);
-        }
     }
 
     //////////////////////////////
@@ -136,7 +95,7 @@ class PackageSet implements Serializable, CoreAwareInterface
      * @param string $packageClass
      *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
+     * @throws PackageException
      */
     public function addPackage(string $packageClass): PackageSet
     {
@@ -161,7 +120,7 @@ class PackageSet implements Serializable, CoreAwareInterface
      * @param array $packagesClasses
      *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
+     * @throws PackageException
      */
     public function addPackages(array $packagesClasses): PackageSet
     {
@@ -175,54 +134,50 @@ class PackageSet implements Serializable, CoreAwareInterface
     /**
      * Add packages from configuration.
      *
-     * @param \Berlioz\Config\ConfigInterface ...$config
+     * @param ConfigInterface ...$config
      *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
+     * @throws PackageException
+     * @throws ConfigException
      */
     public function addPackagesFromConfig(ConfigInterface ...$config): PackageSet
     {
-        try {
-            foreach ($config as $aConfig) {
-                $packages = $aConfig->get('packages', []);
+        foreach ($config as $aConfig) {
+            $packages = $aConfig->get('packages', []);
 
-                if (!is_array($packages)) {
-                    throw new PackageException('"packages" configuration entry must be an array of classes');
-                }
-
-                $this->addPackages($packages);
+            if (!is_array($packages)) {
+                throw new PackageException('"packages" configuration entry must be an array of classes');
             }
 
-            return $this;
-        } catch (Throwable $e) {
-            throw new PackageException('Unable to load packages from configuration', 0, $e);
+            $this->addPackages($packages);
         }
+
+        return $this;
     }
 
     /**
      * Add packages from composer.
      *
+     * @param Composer $composer
+     *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
+     * @throws ComposerException
+     * @throws PackageException
      */
-    public function addPackagesFromComposer(): PackageSet
+    public function addPackagesFromComposer(Composer $composer): PackageSet
     {
-        try {
-            $composerPackages = $this->getCore()->getComposer()->getPackages();
+        $composerPackages = $composer->getPackages();
 
-            // Load default configuration of packages
-            foreach ($composerPackages as $composerPackage) {
-                if (empty($composerPackage['config']['berlioz']['package'])) {
-                    continue;
-                }
-
-                $this->addPackage($composerPackage['config']['berlioz']['package']);
+        // Load default configuration of packages
+        foreach ($composerPackages as $composerPackage) {
+            if (empty($composerPackage['config']['berlioz']['package'])) {
+                continue;
             }
 
-            return $this;
-        } catch (Throwable $e) {
-            throw new PackageException('Unable to load packages from composer', 0, $e);
+            $this->addPackage($composerPackage['config']['berlioz']['package']);
         }
+
+        return $this;
     }
 
     //////////////////////
@@ -232,58 +187,53 @@ class PackageSet implements Serializable, CoreAwareInterface
     /**
      * Config of packages.
      *
+     * @param ConfigInterface $config
+     *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws PackageException
      */
-    public function config(): PackageSet
+    public function config(ConfigInterface $config): PackageSet
     {
-        if ($this->configured) {
-            throw new PackageException('Packages already configured');
-        }
-
-        // Debug
-        $packagesActivity = $this->getCore()->getDebug()->newActivity('Packages (configuration)', 'Berlioz')->start();
-
-        try {
-            /** * @var \Berlioz\Core\Package\PackageInterface $package */
-            foreach ($this->packagesClasses as $package) {
-                $config = $package::config();
+        /** * @var PackageInterface $package */
+        foreach ($this->packagesClasses as $package) {
+            try {
+                $packageConfig = $package::config();
 
                 // No configuration
-                if (null === $config) {
+                if (null === $packageConfig) {
                     continue;
                 }
 
                 // ConfigInterface
-                if ($config instanceof ConfigInterface) {
-                    $this->getCore()->getConfig()->merge($config);
+                if ($packageConfig instanceof ConfigInterface) {
+                    $config->merge($packageConfig);
                     continue;
                 }
 
                 // Array
-                if (is_array($config)) {
-                    $this->getCore()->getConfig()->merge(new ExtendedJsonConfig(json_encode($config)));
+                if (is_array($packageConfig)) {
+                    $config->merge(new ExtendedJsonConfig(json_encode($packageConfig)));
                     continue;
                 }
 
                 // String?
-                if (is_array($config)) {
-                    $this->getCore()->getConfig()->merge(new ExtendedJsonConfig($config, true));
+                if (is_string($packageConfig)) {
+                    $config->merge(new ExtendedJsonConfig($packageConfig, true));
                     continue;
                 }
 
                 throw new PackageException(
-                    'Configuration of package must be a ConfigInterface, an array, a filename, or null'
+                    sprintf(
+                        'Configuration of package "%s" must be a ConfigInterface, an array, a filename, or NULL',
+                        $package
+                    )
                 );
+            } catch (PackageException $e) {
+                throw $e;
+            } catch (Throwable $e) {
+                throw new PackageException(sprintf('Error during registration of package "%s"', $package), 0, $e);
             }
-        } catch (Throwable $e) {
-            throw new PackageException('Error during registration of packages', 0, $e);
-        } finally {
-            $packagesActivity->end();
         }
-
-        $this->configured = true;
 
         return $this;
     }
@@ -291,32 +241,21 @@ class PackageSet implements Serializable, CoreAwareInterface
     /**
      * Register packages.
      *
+     * @param Instantiator $instantiator
+     *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws PackageException
      */
-    public function register(): PackageSet
+    public function register(Instantiator $instantiator): PackageSet
     {
-        if ($this->registered) {
-            throw new PackageException('Packages already registered');
-        }
-
-        // Debug
-        $packagesActivity = $this->getCore()->getDebug()->newActivity('Packages (registration)', 'Berlioz')->start();
-
-        try {
-            /** * @var \Berlioz\Core\Package\PackageInterface $package */
-            foreach ($this->packagesClasses as $package) {
-                $package::register($this->getCore());
-                $this->registered[] = $package;
+        /** * @var PackageInterface $package */
+        foreach ($this->packagesClasses as $package) {
+            try {
+                $instantiator->invokeMethod($package, 'register');
+            } catch (Throwable $e) {
+                throw new PackageException(sprintf('Error during registration of package "%s"', $package), 0, $e);
             }
-        } catch (Throwable $e) {
-            throw new PackageException('Error during registration of packages', 0, $e);
-        } finally {
-            $packagesActivity->end();
         }
-
-        $this->registered = true;
 
         return $this;
     }
@@ -324,65 +263,47 @@ class PackageSet implements Serializable, CoreAwareInterface
     /**
      * Instantiate packages.
      *
-     * @param \Berlioz\ServiceContainer\Instantiator $instantiator
+     * @param Instantiator $instantiator
      *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
+     * @throws PackageException
      */
     protected function instantiate(Instantiator $instantiator): PackageSet
     {
-        try {
-            foreach ($this->packagesClasses as $packageClass) {
+        foreach ($this->packagesClasses as $packageClass) {
+            try {
                 if (array_key_exists($packageClass, $this->packages)) {
                     continue;
                 }
 
-                /** @var \Berlioz\Core\Package\PackageInterface $package */
-                $this->packages[$packageClass] =
-                $package = $instantiator->newInstanceOf($packageClass);
-
-                // Set Core to the package
-                if (null === $package->getCore()) {
-                    $package->setCore($this->getCore());
-                }
+                $this->packages[$packageClass] = $instantiator->newInstanceOf($packageClass);
+            } catch (Throwable $e) {
+                throw new PackageException(sprintf('Error during instantiation of package "%s"', $packageClass), 0, $e);
             }
-
-            return $this;
-        } catch (Throwable $e) {
-            throw new PackageException('Unable to instantiate packages', 0, $e);
         }
+
+        return $this;
     }
 
     /**
      * Init packages.
      *
+     * @param Instantiator $instantiator
+     *
      * @return static
-     * @throws \Berlioz\Core\Exception\PackageException
-     * @throws \Berlioz\Core\Exception\BerliozException
+     * @throws PackageException
      */
-    public function init(): PackageSet
+    public function init(Instantiator $instantiator): PackageSet
     {
-        if ($this->initialized) {
-            throw new PackageException('Packages already initialized');
-        }
+        $this->instantiate($instantiator);
 
-        // Debug
-        $packagesActivity = $this->getCore()->getDebug()->newActivity('Packages (initialization)', 'Berlioz')->start();
-
-        try {
-            $this->instantiate($this->getCore()->getServiceContainer()->getInstantiator());
-
-            foreach ($this->packages as $class => $package) {
-                $package->init();
-                $this->initialized[] = $class;
+        foreach ($this->packages as $class => $package) {
+            try {
+                $instantiator->invokeMethod($package, 'init');
+            } catch (Throwable $e) {
+                throw new PackageException(sprintf('Error during initialization of package "%s"', $class), 0, $e);
             }
-        } catch (Throwable $e) {
-            throw new PackageException('Error during initialization of packages', 0, $e);
-        } finally {
-            $packagesActivity->end();
         }
-
-        $this->initialized = true;
 
         return $this;
     }

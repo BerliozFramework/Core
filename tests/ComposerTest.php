@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -48,10 +48,11 @@ class ComposerTest extends TestCase
         $this->assertEquals(['berlioz/config',
                              'berlioz/core',
                              'berlioz/service-container',
-                             'berlioz/utils',
                              'psr/container',
                              'psr/log',
-                             'psr/simple-cache'],
+                             'psr/simple-cache',
+                             'berlioz/fake1',
+                             'berlioz/fake2'],
                             $packages);
     }
 
@@ -98,8 +99,8 @@ class ComposerTest extends TestCase
         $packages = $composer->getPackages();
 
         $this->assertIsArray($packages);
-        $this->assertCount(7, $packages);
-        $this->assertCount(7, array_filter($packages));
+        $this->assertCount(8, $packages);
+        $this->assertCount(8, array_filter($packages));
     }
 
     public function test__construct()

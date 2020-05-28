@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -34,8 +34,8 @@ abstract class AbstractSection implements Section
     public function getSectionId(): string
     {
         $name = mb_strtolower($this->getSectionName());
-        $name = preg_replace('$[^\w\-_]$i', '', $name);
-        $name = preg_replace(['$\s{2,}$i', '$-{2,}$i', '$_{2,}$i'], [' ', '-', '_'], $name);
+        $name = preg_replace('#[^\w\-\s]#i', '', $name);
+        $name = preg_replace(['#\s+#', '#-{2,}#', '#_{2,}#i'], ['-', '-', '_'], $name);
 
         return $name;
     }

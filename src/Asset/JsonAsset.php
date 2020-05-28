@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2017 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -34,7 +34,7 @@ abstract class JsonAsset
      *
      * @param string $filename
      *
-     * @throws \Berlioz\Core\Exception\AssetException
+     * @throws AssetException
      */
     public function __construct(string $filename)
     {
@@ -45,7 +45,7 @@ abstract class JsonAsset
     /**
      * Reload.
      *
-     * @throws \Berlioz\Core\Exception\AssetException
+     * @throws AssetException
      */
     public function reload()
     {
@@ -68,11 +68,11 @@ abstract class JsonAsset
             function (&$value) {
                 $value = str_replace('\\', '/', $value);
             };
-        $keys = array_keys($assets);
-        $values = array_values($assets);
+        $keys = (array)array_keys($assets);
+        $values = (array)array_values($assets);
         array_walk_recursive($keys, $standardizeSeparator);
         array_walk_recursive($values, $standardizeSeparator);
-        $assets = array_combine($keys, $values);
+        $assets = array_combine($keys, (array)$values);
         unset($keys, $values);
 
         $this->assets = $assets;

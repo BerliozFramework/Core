@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -17,6 +17,8 @@ namespace Berlioz\Core\Asset;
 use Berlioz\Config\ConfigAwareInterface;
 use Berlioz\Config\ConfigAwareTrait;
 use Berlioz\Config\ConfigInterface;
+use Berlioz\Config\Exception\ConfigException;
+use Berlioz\Core\Exception\AssetException;
 
 /**
  * Class Assets.
@@ -26,15 +28,16 @@ use Berlioz\Config\ConfigInterface;
 class Assets implements ConfigAwareInterface
 {
     use ConfigAwareTrait;
-    /** @var \Berlioz\Core\Asset\Manifest Manifest */
+
+    /** @var Manifest Manifest */
     private $manifest;
-    /** @var \Berlioz\Core\Asset\EntryPoints Entry points file */
+    /** @var EntryPoints Entry points file */
     private $entryPoints;
 
     /**
      * Assets constructor.
      *
-     * @param \Berlioz\Config\ConfigInterface $config
+     * @param ConfigInterface $config
      */
     public function __construct(ConfigInterface $config)
     {
@@ -44,9 +47,9 @@ class Assets implements ConfigAwareInterface
     /**
      * Get manifest.
      *
-     * @return \Berlioz\Core\Asset\Manifest
-     * @throws \Berlioz\Config\Exception\ConfigException
-     * @throws \Berlioz\Core\Exception\AssetException
+     * @return Manifest
+     * @throws ConfigException
+     * @throws AssetException
      */
     public function getManifest(): Manifest
     {
@@ -60,9 +63,9 @@ class Assets implements ConfigAwareInterface
     /**
      * Get entry points.
      *
-     * @return \Berlioz\Core\Asset\EntryPoints
-     * @throws \Berlioz\Config\Exception\ConfigException
-     * @throws \Berlioz\Core\Exception\AssetException
+     * @return EntryPoints
+     * @throws ConfigException
+     * @throws AssetException
      */
     public function getEntryPoints(): EntryPoints
     {

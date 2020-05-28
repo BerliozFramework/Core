@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -23,16 +23,8 @@ use Countable;
  */
 class TimeLine extends AbstractSection implements Countable
 {
-    /** @var \Berlioz\Core\Debug\Activity[] Activities */
-    private $activities;
-
-    /**
-     * TimeLine constructor.
-     */
-    public function __construct()
-    {
-        $this->activities = [];
-    }
+    /** @var Activity[] Activities */
+    private $activities = [];
 
     /////////////////////////
     /// SECTION INTERFACE ///
@@ -105,31 +97,15 @@ class TimeLine extends AbstractSection implements Countable
     /**
      * Order activities.
      *
-     * @param \Berlioz\Core\Debug\Activity[] $activities
-     * @param string $orderBy Order by? Values: 'start', 'end' or 'duration'
+     * @param Activity[] $activities
      */
-    private function orderActivities(array &$activities, string $orderBy = 'start')
+    private function orderActivities(array &$activities)
     {
         usort(
             $activities,
-            function ($activityA, $activityB) use ($orderBy) {
-                /**
-                 * @var \Berlioz\Core\Debug\Activity $activityA
-                 * @var \Berlioz\Core\Debug\Activity $activityB
-                 */
-                switch ($orderBy) {
-                    case 'duration':
-                        $aTime = $activityA->duration();
-                        $bTime = $activityB->duration();
-                        break;
-                    case 'end':
-                        $aTime = $activityA->getEndMicroTime();
-                        $bTime = $activityB->getEndMicroTime();
-                        break;
-                    default:
-                        $aTime = $activityA->getStartMicroTime();
-                        $bTime = $activityB->getStartMicroTime();
-                }
+            function (Activity $activityA, Activity $activityB) {
+                $aTime = $activityA->getStartMicroTime();
+                $bTime = $activityB->getStartMicroTime();
 
                 return $aTime == $bTime ? 0 : (($aTime < $bTime) ? -1 : 1);
             }
@@ -139,9 +115,9 @@ class TimeLine extends AbstractSection implements Countable
     /**
      * Add activity.
      *
-     * @param \Berlioz\Core\Debug\Activity $activity
+     * @param Activity $activity
      *
-     * @return \Berlioz\Core\Debug\TimeLine
+     * @return TimeLine
      */
     public function addActivity(Activity $activity): TimeLine
     {
@@ -155,20 +131,22 @@ class TimeLine extends AbstractSection implements Countable
      *
      * @param string|null $group Group name, null for all
      *
-     * @return \Berlioz\Core\Debug\Activity[]
+     * @return Activity[]
      */
     public function getActivities(string $group = null): array
     {
         $this->orderActivities($this->activities);
-        $activities = [];
 
-        foreach ($this->activities as $activity) {
-            if (null === $group || $activity->getGroup() == $group) {
-                $activities[] = $activity;
-            }
+        if (null === $group) {
+            return $this->activities;
         }
 
-        return $activities;
+        return array_filter(
+            $this->activities,
+            function (Activity $activity) use ($group) {
+                return $activity->getGroup() == $group;
+            }
+        );
     }
 
     /**
@@ -176,20 +154,24 @@ class TimeLine extends AbstractSection implements Countable
      *
      * @param string|null $group Group name, null for all
      *
-     * @return float
+     * @return float|null
      */
-    public function getFirstTime(string $group = null): float
+    public function getFirstTime(string $group = null): ?float
     {
-        $firstTime = 0;
+        $activities = $this->getActivities($group);
+        $activities = array_map(
+            function (Activity $activity) {
+                return $activity->getStartMicroTime();
+            },
+            $activities
+        );
+        $activities = array_filter($activities);
 
-        foreach ($this->activities as $activity) {
-            if ((null === $group || $activity->getGroup() == $group) &&
-                ($activity->getStartMicroTime() < $firstTime || $firstTime == 0)) {
-                $firstTime = $activity->getStartMicroTime();
-            }
+        if (empty($activities)) {
+            return null;
         }
 
-        return $firstTime;
+        return min($activities);
     }
 
     /**
@@ -197,20 +179,24 @@ class TimeLine extends AbstractSection implements Countable
      *
      * @param string|null $group Group name, null for all
      *
-     * @return float
+     * @return float|null
      */
-    public function getLastTime(string $group = null): float
+    public function getLastTime(string $group = null): ?float
     {
-        $lastTime = 0;
+        $activities = $this->getActivities($group);
+        $activities = array_map(
+            function (Activity $activity) {
+                return $activity->getEndMicroTime();
+            },
+            $activities
+        );
+        $activities = array_filter($activities);
 
-        foreach ($this->activities as $activity) {
-            if ((null === $group || $activity->getGroup() == $group) &&
-                ($activity->getEndMicroTime() > $lastTime || $lastTime == 0)) {
-                $lastTime = $activity->getEndMicroTime();
-            }
+        if (empty($activities)) {
+            return null;
         }
 
-        return $lastTime;
+        return max($activities);
     }
 
     /**
@@ -218,11 +204,18 @@ class TimeLine extends AbstractSection implements Countable
      *
      * @param string|null $group Group name, null for all
      *
-     * @return float
+     * @return float|null
      */
-    public function getDuration(string $group = null): float
+    public function getDuration(string $group = null): ?float
     {
-        return $this->getLastTime($group) - $this->getFirstTime($group);
+        $firstTime = $this->getFirstTime($group);
+        $lastTime = $this->getLastTime($group);
+
+        if (null === $firstTime || null === $lastTime) {
+            return null;
+        }
+
+        return $lastTime - $firstTime;
     }
 
     /**
@@ -237,9 +230,18 @@ class TimeLine extends AbstractSection implements Countable
         $memoryUsages = [];
         $firstTime = $this->getFirstTime($group);
 
-        /** @var \Berlioz\Core\Debug\Activity[] $activities */
+        if (null === $firstTime) {
+            return [];
+        }
+
         $activities = $this->getActivities($group);
-        $this->orderActivities($activities, 'start');
+        $activities = array_filter(
+            $activities,
+            function (Activity $activity) {
+                return null !== $activity->getStartMicroTime() && null !== $activity->getEndMicroTime();
+            }
+        );
+        $this->orderActivities($activities);
         $nbActivities = count($activities);
 
         for ($i = 0; $i < $nbActivities; $i++) {
@@ -279,19 +281,23 @@ class TimeLine extends AbstractSection implements Countable
      *
      * @param string|null $group Group name, null for all
      *
-     * @return int
+     * @return int|null
      */
-    public function getMemoryPeakUsage(string $group = null): int
+    public function getMemoryPeakUsage(string $group = null): ?int
     {
-        $memoryUsage = 0;
+        $activities = $this->getActivities($group);
+        $activities = array_map(
+            function (Activity $activity) {
+                return $activity->getEndMemoryPeakUsage();
+            },
+            $activities
+        );
+        $activities = array_filter($activities);
 
-        foreach ($this->activities as $activity) {
-            if ((null === $group || $activity->getGroup() == $group) &&
-                ($activity->getEndMemoryPeakUsage() > $memoryUsage || $memoryUsage == 0)) {
-                $memoryUsage = $activity->getEndMemoryPeakUsage();
-            }
+        if (empty($activities)) {
+            return null;
         }
 
-        return $memoryUsage;
+        return max($activities);
     }
 }

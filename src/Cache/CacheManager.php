@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -21,6 +21,7 @@ use DateInterval;
 use DateTime;
 use Exception;
 use Psr\SimpleCache\CacheInterface;
+use Traversable;
 
 /**
  * Class CacheManager.
@@ -29,36 +30,20 @@ use Psr\SimpleCache\CacheInterface;
  */
 class CacheManager implements CacheInterface
 {
+    use KeyControlTrait;
+
     public const CACHE_DIRECTORY = 'berlioz';
-    /** @var \Berlioz\Core\Directories\DirectoriesInterface */
+    /** @var DirectoriesInterface */
     private $directories;
 
     /**
      * CacheManager constructor.
      *
-     * @param \Berlioz\Core\Directories\DirectoriesInterface $directories
+     * @param DirectoriesInterface $directories
      */
     public function __construct(DirectoriesInterface $directories)
     {
         $this->directories = $directories;
-    }
-
-    /**
-     * Control key.
-     *
-     * @param $key
-     *
-     * @throws \Berlioz\Core\Exception\InvalidArgumentCacheException
-     */
-    protected function controlKey($key)
-    {
-        if (!is_string($key)) {
-            throw new InvalidArgumentCacheException('Invalid key name for cache, must be string');
-        }
-
-        if ('' === trim($key)) {
-            throw new InvalidArgumentCacheException('Invalid key name for cache, must be not empty');
-        }
     }
 
     /**
@@ -67,7 +52,7 @@ class CacheManager implements CacheInterface
      * @param mixed $ttl
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     private function isValidTtl($ttl): bool
     {
@@ -106,7 +91,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function get($key, $default = null)
     {
@@ -144,7 +129,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function set($key, $data, $ttl = null)
     {
@@ -191,7 +176,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function delete($key)
     {
@@ -273,7 +258,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function getMultiple($keys, $default = null)
     {
@@ -292,7 +277,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function setMultiple($values, $ttl = null)
     {
@@ -301,7 +286,7 @@ class CacheManager implements CacheInterface
         }
 
         if (!is_array($values)) {
-            /** @var \Traversable $values */
+            /** @var Traversable $values */
             $values = iterator_to_array($values, true);
         }
 
@@ -314,7 +299,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function deleteMultiple($keys)
     {
@@ -331,7 +316,7 @@ class CacheManager implements CacheInterface
 
     /**
      * @inheritdoc
-     * @throws \Berlioz\Core\Exception\CacheException
+     * @throws CacheException
      */
     public function has($key)
     {

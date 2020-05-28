@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -14,16 +14,15 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
+use Berlioz\Config\ConfigInterface;
 use Berlioz\Core\Core;
-use Berlioz\Core\CoreAwareInterface;
-use Serializable;
 
 /**
  * Interface PackageInterface.
  *
  * @package Berlioz\Core\Package
  */
-interface PackageInterface extends CoreAwareInterface, Serializable
+interface PackageInterface
 {
     /**
      * Package configuration.
@@ -31,7 +30,7 @@ interface PackageInterface extends CoreAwareInterface, Serializable
      * Method called for the configuration of package.
      * Do not use this method to do any actions on framework, only configuration of package.
      *
-     * @return \Berlioz\Config\ConfigInterface|array|string|null
+     * @return ConfigInterface|array|string|null
      */
     public static function config();
 
@@ -41,7 +40,7 @@ interface PackageInterface extends CoreAwareInterface, Serializable
      * Method called for the registration of services associated to the package.
      * Do not use this method to do any actions on framework, only registration of services.
      *
-     * @param \Berlioz\Core\Core $core
+     * @param Core $core
      *
      * @return void
      */

@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2017 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -33,7 +33,7 @@ class EntryPoints extends JsonAsset
      * @param string $filename Filename
      * @param string|null $target Target to get entry points
      *
-     * @throws \Berlioz\Core\Exception\AssetException
+     * @throws AssetException
      */
     public function __construct(string $filename, ?string $target = null)
     {

@@ -3,7 +3,7 @@
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2018 Ronan GIRON
+ * @copyright 2020 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -13,12 +13,17 @@
 namespace Berlioz\Core\Tests;
 
 use Berlioz\Config\ConfigInterface;
+use Berlioz\Core\Cache\NullCacheManager;
 use Berlioz\Core\Composer;
 use Berlioz\Core\Core;
 use Berlioz\Core\Debug;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Package\PackageSet;
+use Berlioz\Core\TestProject\ServiceBar;
+use Berlioz\Core\TestProject\ServiceFoo;
+use Berlioz\Core\TestProject\ServiceQuux;
+use Berlioz\Core\TestProject\ServiceQux;
 use Berlioz\Core\Tests\Directories\FakeDefaultDirectories;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
@@ -73,7 +78,7 @@ class CoreTest extends TestCase
             $this->assertInstanceOf(CacheInterface::class, $core->getCacheManager());
         }
         if (!$core->isCacheEnabled()) {
-            $this->assertNull($core->getCacheManager());
+            $this->assertInstanceOf(NullCacheManager::class, $core->getCacheManager());
         }
     }
 
@@ -107,6 +112,25 @@ class CoreTest extends TestCase
     public function testGetServiceContainer(Core $core)
     {
         $this->assertInstanceOf(Composer::class, $core->getComposer());
+    }
+
+    /**
+     * @dataProvider provider
+     */
+    public function testInitServiceContainer(Core $core)
+    {
+        $serviceQux = $core->getServiceContainer()->get(ServiceQux::class);
+        $serviceFoo = $core->getServiceContainer()->get(ServiceFoo::class);
+        $serviceBar = $core->getServiceContainer()->get(ServiceBar::class);
+        $serviceQuux = $core->getServiceContainer()->get(ServiceQuux::class);
+
+        $this->assertInstanceOf(ServiceQux::class, $serviceQux);
+        $this->assertInstanceOf(ServiceFoo::class, $serviceFoo);
+        $this->assertInstanceOf(ServiceBar::class, $serviceBar);
+        $this->assertInstanceOf(ServiceQuux::class, $serviceQuux);
+        $this->assertSame($serviceQux->serviceBar, $serviceBar);
+        $this->assertEquals(7, $serviceQux->increment);
+        $this->assertTrue($serviceQuux->factory);
     }
 
     /**
@@ -151,11 +175,7 @@ class CoreTest extends TestCase
                 $bar = true;
             });
 
-        // Reflection of core
-        $reflectionCore = new \ReflectionObject($core);
-        $reflectionTerminateMethod = $reflectionCore->getMethod('terminate');
-        $reflectionTerminateMethod->setAccessible(true);
-        $reflectionTerminateMethod->invoke($core);
+        $core->terminate();
 
         $this->assertTrue($foo);
         $this->assertTrue($bar);
