@@ -45,7 +45,7 @@ class PhpErrorTest extends TestCase
             [
                 $error1,
                 $error2,
-                ['errno' => E_USER_NOTICE, 'message' => 'Qux', 'file' => __FILE__, 'line' => 30]
+                ['errno' => E_USER_NOTICE, 'message' => 'Qux', 'file' => __FILE__, 'line' => 40]
             ],
             $phpError->getPhpErrors()
         );
