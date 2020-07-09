@@ -163,31 +163,33 @@ class Debug implements Serializable
         }
 
         // Get ip addresses from config
-        $ipAddresses = $debug = $config->get('berlioz.debug.ip', []);
-        if (!is_array($ipAddresses)) {
+        $configIpAddresses = $debug = $config->get('berlioz.debug.ip', []);
+        if (!is_array($configIpAddresses)) {
             return false;
         }
 
         // No ip restriction
-        if (empty($ipAddresses)) {
+        if (empty($configIpAddresses)) {
             return true;
         }
 
         // Get ip
-        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+        $serverIpAddresses = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
 
-        if (null === $ipAddress) {
+        if (null === $serverIpAddresses) {
             return false;
         }
 
-        // Find ip
-        if (in_array($ipAddress, $ipAddresses)) {
-            return true;
-        }
+        foreach(explode(",", $serverIpAddresses) as $ipAddress) {
+            // Find ip
+            if (in_array($ipAddress, $configIpAddresses)) {
+                return true;
+            }
 
-        // Find host
-        if (in_array(gethostbyaddr($ipAddress), $ipAddresses)) {
-            return true;
+            // Find host
+            if (in_array(gethostbyaddr($ipAddress), $configIpAddresses)) {
+                return true;
+            }
         }
 
         return false;
