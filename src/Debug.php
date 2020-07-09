@@ -180,7 +180,9 @@ class Debug implements Serializable
             return false;
         }
 
-        foreach(explode(",", $serverIpAddresses) as $ipAddress) {
+        foreach (explode(",", $serverIpAddresses) as $ipAddress) {
+            $ipAddress = trim($ipAddress);
+
             // Find ip
             if (in_array($ipAddress, $configIpAddresses)) {
                 return true;
