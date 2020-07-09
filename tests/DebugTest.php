@@ -94,5 +94,13 @@ class DebugTest extends TestCase
         $_SERVER['REMOTE_ADDR'] = '127.0.0.2';
 
         $this->assertFalse($debug->isEnabledInConfig($config));
+        
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1,127.0.0.2';
+
+        $this->assertTrue($debug->isEnabledInConfig($config));
+
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.3, 127.0.0.4';
+
+        $this->assertFalse($debug->isEnabledInConfig($config));
     }
 }
