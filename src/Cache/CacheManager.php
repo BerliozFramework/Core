@@ -90,6 +90,31 @@ class CacheManager implements CacheInterface
     }
 
     /**
+     * Get cache file contents.
+     *
+     * @param string $filename
+     *
+     * @return array|null
+     * @throws CacheException
+     */
+    private function getCacheFileContents(string $filename): ?array
+    {
+        if (!file_exists($filename)) {
+            return null;
+        }
+
+        if (false === ($content = @file_get_contents($filename))) {
+            throw new CacheException(sprintf('Unable to read file from cache "%s"', $filename));
+        }
+
+        if (false === ($unserialized = @unserialize($content)) || !is_array($unserialized)) {
+            throw new CacheException(sprintf('Corrupted data in cache file "%s"', $filename));
+        }
+
+        return $unserialized;
+    }
+
+    /**
      * @inheritdoc
      * @throws CacheException
      */
@@ -98,21 +123,13 @@ class CacheManager implements CacheInterface
         $this->controlKey($key);
         $cacheFilename = $this->getFilename($key);
 
-        if (!file_exists($cacheFilename)) {
+        if (null === ($content = $this->getCacheFileContents($cacheFilename))) {
             return $default;
         }
 
-        if (($content = @file_get_contents($cacheFilename)) === false) {
-            throw new CacheException(sprintf('Unable to read file from cache "%s"', $cacheFilename));
-        }
-
-        if (($unserialized = @unserialize($content)) === false) {
-            throw new CacheException(sprintf('Corrupted data for key "%s" from cache "%s"', $key, $cacheFilename));
-        }
-
         try {
-            if ($this->isValidTtl($unserialized['ttl'])) {
-                if (($unserializedData = @unserialize($unserialized['data'] ?? null)) === false) {
+            if ($this->isValidTtl($content['ttl'])) {
+                if (($unserializedData = @unserialize($content['data'] ?? null)) === false) {
                     throw new CacheException(
                         sprintf('Corrupted data for key "%s" from cache "%s"', $key, $cacheFilename)
                     );
@@ -320,6 +337,13 @@ class CacheManager implements CacheInterface
      */
     public function has($key)
     {
-        return $this->get($key, $this) !== $this;
+        $this->controlKey($key);
+        $cacheFilename = $this->getFilename($key);
+
+        if (null === ($content = $this->getCacheFileContents($cacheFilename))) {
+            return false;
+        }
+
+        return $this->isValidTtl($content['ttl']);
     }
 }
