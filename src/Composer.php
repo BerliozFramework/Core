@@ -260,4 +260,18 @@ class Composer implements Serializable
 
         return $this->packages;
     }
+
+    /**
+     * Get version.
+     *
+     * @return string|null
+     */
+    public function getVersion(): ?string
+    {
+        if (!empty($this->composerJson['version'])) {
+            return $this->composerJson['version'];
+        }
+
+        return null;
+    }
 }

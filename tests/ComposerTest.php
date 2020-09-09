@@ -103,6 +103,14 @@ class ComposerTest extends TestCase
         $this->assertCount(8, array_filter($packages));
     }
 
+    /**
+     * @dataProvider provider
+     */
+    public function testGetVersion(Composer $composer)
+    {
+        $this->assertEquals('1.0.1', $composer->getVersion());
+    }
+
     public function test__construct()
     {
         $composer = new Composer(__DIR__ . '/_envTest/composer.json');
