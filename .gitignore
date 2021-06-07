@@ -1,5 +1,5 @@
 /vendor/
-/tests/_envTest/var/
+/tests_env/var/
 !**/.gitkeep
 /composer.lock
 .phpunit.result.cache

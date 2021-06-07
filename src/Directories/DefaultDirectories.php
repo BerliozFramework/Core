@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -18,30 +18,39 @@ use Berlioz\Core\Exception\BerliozException;
 
 /**
  * Class DefaultDirectories.
- *
- * @package Berlioz\Core\Directories
  */
 class DefaultDirectories implements DirectoriesInterface
 {
-    /** @var string Working directory */
-    protected $workingDirectory;
-    /** @var string App directory */
-    protected $appDirectory;
-    /** @var string Config directory */
-    protected $configDirectory;
-    /** @var string Var directory */
-    protected $varDirectory;
-    /** @var string Cache directory */
-    protected $cacheDirectory;
-    /** @var string Log directory */
-    protected $logDirectory;
-    /** @var string Debug directory */
-    protected $debugDirectory;
-    /** @var string Vendor directory */
-    protected $vendorDirectory;
+    protected ?string $workingDirectory = null;
+    protected ?string $appDirectory = null;
+    protected ?string $configDirectory = null;
+    protected ?string $varDirectory = null;
+    protected ?string $cacheDirectory = null;
+    protected ?string $logDirectory = null;
+    protected ?string $debugDirectory = null;
+    protected ?string $vendorDirectory = null;
 
     /**
-     * @inheritdoc
+     * @inheritDoc
+     * @throws BerliozException
+     */
+    public function getArrayCopy(): array
+    {
+        return [
+
+            'app' => $this->getAppDir(),
+            'working' => $this->getWorkingDir(),
+            'config' => $this->getConfigDir(),
+            'debug' => $this->getDebugDir(),
+            'log' => $this->getLogDir(),
+            'cache' => $this->getCacheDir(),
+            'var' => $this->getVarDir(),
+            'vendor' => $this->getVendorDir(),
+        ];
+    }
+
+    /**
+     * @inheritDoc
      * @throws BerliozException
      */
     public function getWorkingDir(): string
@@ -73,7 +82,7 @@ class DefaultDirectories implements DirectoriesInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      * @throws BerliozException
      */
     public function getAppDir(): string
@@ -90,7 +99,7 @@ class DefaultDirectories implements DirectoriesInterface
                 $directoryBefore = $directory;
                 $directory = @realpath($directory . DIRECTORY_SEPARATOR . '..');
 
-                if (file_exists($composerFilename = $directory . DIRECTORY_SEPARATOR . 'composer.json')) {
+                if (file_exists($directory . DIRECTORY_SEPARATOR . 'composer.json')) {
                     $this->appDirectory = $directory;
                     break(2);
                 }

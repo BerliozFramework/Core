@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -18,16 +18,11 @@ use Berlioz\Core\Exception\AssetException;
 
 /**
  * Class JsonAsset.
- *
- * @package Berlioz\Core\Asset
  */
 abstract class JsonAsset
 {
     protected const JSON_DEPTH = 512;
-    /** @var string Filename */
-    protected $filename;
-    /** @var array Assets */
-    protected $assets = [];
+    protected array $assets = [];
 
     /**
      * JsonAsset constructor.
@@ -36,9 +31,9 @@ abstract class JsonAsset
      *
      * @throws AssetException
      */
-    public function __construct(string $filename)
-    {
-        $this->filename = $filename;
+    public function __construct(
+        protected string $filename
+    ) {
         $this->reload();
     }
 
@@ -47,7 +42,7 @@ abstract class JsonAsset
      *
      * @throws AssetException
      */
-    public function reload()
+    public function reload(): void
     {
         if (!file_exists($this->filename)) {
             throw new AssetException(sprintf('Assets file "%s" does not exists', $this->filename));

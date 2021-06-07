@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -15,18 +15,12 @@ declare(strict_types=1);
 namespace Berlioz\Core\Asset;
 
 use Berlioz\Core\Exception\AssetException;
-use Exception;
 
 /**
  * Class EntryPoints.
- *
- * @package Berlioz\Core\Asset
  */
 class EntryPoints extends JsonAsset
 {
-    /** @var string|null Target to get entry points */
-    private $target;
-
     /**
      * EntryPoints constructor.
      *
@@ -35,20 +29,21 @@ class EntryPoints extends JsonAsset
      *
      * @throws AssetException
      */
-    public function __construct(string $filename, ?string $target = null)
-    {
+    public function __construct(
+        string $filename,
+        protected ?string $target = null
+    ) {
         parent::__construct($filename);
-        $this->target = $target;
 
         if (!empty($this->target)) {
             try {
-                if (null === ($this->assets = b_array_traverse_get($this->assets, $this->target))) {
+                if (null === ($assets = b_array_traverse_get($this->assets, $this->target))) {
                     throw new AssetException(sprintf('Key "%s" to target entry points is invalid', $this->target));
                 }
-            } catch (AssetException $e) {
-                throw $e;
-            } catch (Exception $e) {
-                throw new AssetException(sprintf('Error to target key "%s" of entry points', $this->target), 0, $e);
+
+                $this->assets = (array)$assets;
+            } catch (AssetException $exception) {
+                throw $exception;
             }
         }
     }

@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -14,55 +14,34 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
+use Berlioz\Config\ConfigInterface;
 use Berlioz\Core\Core;
-use Berlioz\Core\CoreAwareTrait;
-use Berlioz\ServiceContainer\Service;
+use Berlioz\ServiceContainer\Container;
 
 /**
  * Class AbstractPackage.
- *
- * @package Berlioz\Core\Package
  */
 abstract class AbstractPackage implements PackageInterface
 {
-    use CoreAwareTrait;
-
-    ///////////////
-    /// PACKAGE ///
-    ///////////////
-
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public static function config()
+    public static function config(): ?ConfigInterface
     {
         return null;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public static function register(Core $core): void
+    public static function register(Container $container): void
     {
     }
 
     /**
-     * Add new service to the service container.
-     *
-     * @param Core $core
-     * @param Service $service
-     *
-     * @return void
+     * @inheritDoc
      */
-    protected static function addService(Core $core, Service $service): void
-    {
-        $core->getServiceContainer()->add($service);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public static function boot(Core $core): void
     {
     }
 }

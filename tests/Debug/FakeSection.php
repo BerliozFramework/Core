@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -13,30 +13,28 @@
 namespace Berlioz\Core\Tests\Debug;
 
 use Berlioz\Core\Debug\AbstractSection;
+use Berlioz\Core\Debug\DebugHandler;
 
 class FakeSection extends AbstractSection
 {
-    private $foo = 'bar';
-
-    public function __toString(): string
-    {
-        return $this->foo;
-    }
+    private string $foo = 'bar';
 
     public function getSectionName(): string
     {
         return 'Fake section';
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(['foo' => $this->foo]);
+        return ['foo' => $this->foo];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $unserialized = unserialize($serialized);
+        $this->foo = $data['foo'];
+    }
 
-        $this->foo = $unserialized['foo'];
+    public function snap(DebugHandler $debug): void
+    {
     }
 }

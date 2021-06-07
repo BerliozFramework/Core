@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -13,19 +13,21 @@
 namespace Berlioz\Core\Tests;
 
 use Berlioz\Config\ConfigInterface;
-use Berlioz\Core\Cache\NullCacheManager;
-use Berlioz\Core\Composer;
+use Berlioz\Core\Cache\CacheManager;
+use Berlioz\Core\Cache\FileCacheDriver;
+use Berlioz\Core\Cache\MemoryCacheDriver;
+use Berlioz\Core\Cache\NullCacheDriver;
+use Berlioz\Core\Composer\Composer;
 use Berlioz\Core\Core;
-use Berlioz\Core\Debug;
+use Berlioz\Core\Debug\DebugHandler;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Package\PackageSet;
-use Berlioz\Core\TestProject\ServiceBar;
-use Berlioz\Core\TestProject\ServiceFoo;
-use Berlioz\Core\TestProject\ServiceQuux;
-use Berlioz\Core\TestProject\ServiceQux;
 use Berlioz\Core\Tests\Directories\FakeDefaultDirectories;
+use Berlioz\ServiceContainer\Container;
+use Locale;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 class CoreTest extends TestCase
@@ -39,145 +41,109 @@ class CoreTest extends TestCase
         return [[$core, $directories], [$core2, $directories]];
     }
 
-    public function test__construct()
+    public function test__construct_withoutCache()
     {
         $directories = new FakeDefaultDirectories();
         $core = new Core($directories, false);
-        $core2 = new Core($directories, true);
 
-        $this->assertFalse($core->isCacheEnabled());
-        $this->assertTrue($core2->isCacheEnabled());
+        $this->assertInstanceOf(CacheManager::class, $core->getCache());
+        $this->assertFalse($core->getCache()->getClass());
         $this->assertEquals($directories, $core->getDirectories());
-        $this->assertEquals($directories, $core2->getDirectories());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testSerialize(Core $core)
+    public function test__construct_withCache()
     {
+        $directories = new FakeDefaultDirectories();
+        $core = new Core($directories, true);
+
+        $this->assertInstanceOf(CacheManager::class, $core->getCache());
+        $this->assertEquals(FileCacheDriver::class, $core->getCache()->getClass());
+        $this->assertEquals($directories, $core->getDirectories());
+
+        $core = new Core($directories);
+
+        $this->assertInstanceOf(CacheManager::class, $core->getCache());
+        $this->assertEquals(FileCacheDriver::class, $core->getCache()->getClass());
+        $this->assertEquals($directories, $core->getDirectories());
+    }
+
+    public function test__construct_withSpecifiedCache()
+    {
+        $directories = new FakeDefaultDirectories();
+        $cache = new MemoryCacheDriver();
+        $cache->set('foo', 'bar');
+        $core = new Core($directories, $cache);
+
+        $this->assertInstanceOf(CacheManager::class, $core->getCache());
+        $this->assertEquals(MemoryCacheDriver::class, $core->getCache()->getClass());
+        $this->assertEquals('bar', $core->getCache()->get('foo'));
+        $this->assertEquals($directories, $core->getDirectories());
+    }
+
+    public function testSerialize()
+    {
+        $core = new Core(new FakeDefaultDirectories());
+
         $this->expectException(BerliozException::class);
-        $core->serialize();
+        serialize($core);
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testUnserialize(Core $core)
+    public function testGetCache()
     {
-        $this->expectException(BerliozException::class);
-        $core->unserialize('');
+        $core = new Core(new FakeDefaultDirectories());
+
+        $this->assertInstanceOf(CacheInterface::class, $core->getCache());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetCacheManager(Core $core)
+    public function testGetDebug()
     {
-        if ($core->isCacheEnabled()) {
-            $this->assertInstanceOf(CacheInterface::class, $core->getCacheManager());
-        }
-        if (!$core->isCacheEnabled()) {
-            $this->assertInstanceOf(NullCacheManager::class, $core->getCacheManager());
-        }
+        $core = new Core(new FakeDefaultDirectories());
+
+        $this->assertInstanceOf(DebugHandler::class, $core->getDebug());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetDebug(Core $core)
+    public function testGetComposer()
     {
-        $this->assertInstanceOf(Debug::class, $core->getDebug());
-    }
+        $core = new Core(new FakeDefaultDirectories());
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetComposer(Core $core)
-    {
         $this->assertInstanceOf(Composer::class, $core->getComposer());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetConfig(Core $core)
+    public function testGetConfig()
     {
+        $core = new Core(new FakeDefaultDirectories());
+
         $this->assertInstanceOf(ConfigInterface::class, $core->getConfig());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetServiceContainer(Core $core)
+    public function testGetContainer()
     {
-        $this->assertInstanceOf(Composer::class, $core->getComposer());
+        $core = new Core(new FakeDefaultDirectories());
+
+        $this->assertInstanceOf(ContainerInterface::class, $core->getContainer());
+        $this->assertInstanceOf(Container::class, $core->getContainer());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testInitServiceContainer(Core $core)
+    public function testGetLocale()
     {
-        $serviceQux = $core->getServiceContainer()->get(ServiceQux::class);
-        $serviceFoo = $core->getServiceContainer()->get(ServiceFoo::class);
-        $serviceBar = $core->getServiceContainer()->get(ServiceBar::class);
-        $serviceQuux = $core->getServiceContainer()->get(ServiceQuux::class);
+        $core = new Core(new FakeDefaultDirectories());
 
-        $this->assertInstanceOf(ServiceQux::class, $serviceQux);
-        $this->assertInstanceOf(ServiceFoo::class, $serviceFoo);
-        $this->assertInstanceOf(ServiceBar::class, $serviceBar);
-        $this->assertInstanceOf(ServiceQuux::class, $serviceQuux);
-        $this->assertSame($serviceQux->serviceBar, $serviceBar);
-        $this->assertEquals(7, $serviceQux->increment);
-        $this->assertTrue($serviceQuux->factory);
+        $this->assertEquals(Locale::getDefault(), $core->getLocale());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testLocale(Core $core)
+    public function testGetPackage()
     {
-        $this->assertEquals(\Locale::getDefault(), $core->getLocale());
-        $this->assertEquals($core, $core->setLocale('fr_FR'));
-        $this->assertEquals('fr_FR', $core->getLocale());
-    }
+        $core = new Core(new FakeDefaultDirectories());
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetPackage(Core $core)
-    {
         $this->assertInstanceOf(PackageSet::class, $core->getPackages());
     }
 
-    /**
-     * @dataProvider provider
-     */
-    public function testGetDirectories(Core $core, DirectoriesInterface $directories)
+    public function testGetDirectories()
     {
+        $directories = new FakeDefaultDirectories();
+        $core = new Core($directories);
+
         $this->assertInstanceOf(DirectoriesInterface::class, $core->getDirectories());
-        $this->assertEquals($directories, $core->getDirectories());
-    }
-
-    /**
-     * @dataProvider provider
-     */
-    public function testOnTerminate(Core $core)
-    {
-        $foo = false;
-        $bar = false;
-        $core
-            ->onTerminate(function () use (&$foo) {
-                $foo = true;
-            })
-            ->onTerminate(function () use (&$bar) {
-                $bar = true;
-            });
-
-        $core->terminate();
-
-        $this->assertTrue($foo);
-        $this->assertTrue($bar);
+        $this->assertSame($directories, $core->getDirectories());
     }
 }

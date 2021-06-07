@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -14,18 +14,20 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\App;
 
+use Berlioz\Config\Config;
+use Berlioz\Config\ConfigInterface;
+use Berlioz\Config\Exception\ConfigException;
 use Berlioz\Core\Asset\Assets;
 use Berlioz\Core\Core;
 use Berlioz\Core\CoreAwareInterface;
 use Berlioz\Core\CoreAwareTrait;
-use Berlioz\Core\Exception\BerliozException;
+use Berlioz\Core\Debug\DebugHandler;
+use Berlioz\ServiceContainer\Container;
 use Berlioz\ServiceContainer\Exception\ContainerException;
-use Berlioz\ServiceContainer\Service;
+use Closure;
 
 /**
  * Class AbstractApp.
- *
- * @package Berlioz\Core\App
  */
 abstract class AbstractApp implements CoreAwareInterface
 {
@@ -35,21 +37,18 @@ abstract class AbstractApp implements CoreAwareInterface
      * AbstractApp constructor.
      *
      * @param Core|null $core
-     *
-     * @throws BerliozException
-     * @throws ContainerException
      */
     public function __construct(?Core $core = null)
     {
-        if (null === $core) {
-            $core = new Core();
-        }
-
-        $this->setCore($core);
-
-        // Add me to services
-        $this->getCore()->getServiceContainer()->add(new Service($this, 'app'));
+        $this->setCore($core ?? new Core());
+        $this->getCore()->getContainer()->add($this, 'app');
+        $this->boot();
     }
+
+    /**
+     * Application boot.
+     */
+    abstract protected function boot(): void;
 
     /**
      * Get service.
@@ -57,21 +56,68 @@ abstract class AbstractApp implements CoreAwareInterface
      * @param string $id
      *
      * @return mixed
-     * @throws BerliozException
      */
-    public function getService(string $id)
+    public function get(string $id): mixed
     {
-        return $this->getCore()->getServiceContainer()->get($id);
+        return $this->getCore()->getContainer()->get($id);
+    }
+
+    /**
+     * Call.
+     *
+     * @param Closure|array|string $subject
+     * @param array $arguments
+     * @param bool $autoWiring
+     *
+     * @return mixed
+     * @throws ContainerException
+     */
+    public function call(Closure|array|string $subject, array $arguments = [], bool $autoWiring = true): mixed
+    {
+        return $this->getCore()->getContainer()->call($subject, $arguments, $autoWiring);
     }
 
     /**
      * Get assets.
      *
      * @return Assets
-     * @throws BerliozException
      */
     public function getAssets(): Assets
     {
-        return $this->getService(Assets::class);
+        return $this->get(Assets::class);
+    }
+
+    /**
+     * Get config.
+     *
+     * @return ConfigInterface
+     */
+    public function getConfig(): ConfigInterface
+    {
+        return $this->getCore()->getConfig();
+    }
+
+    /**
+     * Get config key.
+     *
+     * @param string $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     * @throws ConfigException
+     */
+    public function getConfigKey(string $key, mixed $default = null): mixed
+    {
+        return $this->getConfig()->get($key, $default);
+    }
+
+    /**
+     * Get debug.
+     *
+     * @return DebugHandler
+     */
+    public function getDebug(): DebugHandler
+    {
+        return $this->getCore()->getDebug();
     }
 }

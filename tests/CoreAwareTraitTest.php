@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -13,6 +13,7 @@
 namespace Berlioz\Core\Tests;
 
 use Berlioz\Core\Core;
+use Berlioz\Core\CoreAwareTrait;
 use Berlioz\Core\Tests\Directories\FakeDefaultDirectories;
 use PHPUnit\Framework\TestCase;
 
@@ -20,12 +21,13 @@ class CoreAwareTraitTest extends TestCase
 {
     public function test()
     {
-        $coreAware = new FakeCoreAwareTrait();
+        /** @var CoreAwareTrait $trait */
+        $trait = $this->getMockForTrait(CoreAwareTrait::class);
 
-        $this->assertNull($coreAware->getCore());
+        $this->assertNull($trait->getCore());
 
-        $coreAware->setCore($core = new Core(new FakeDefaultDirectories(), false));
+        $trait->setCore($core = new Core(new FakeDefaultDirectories(), false));
 
-        $this->assertSame($coreAware->getCore(), $core);
+        $this->assertSame($trait->getCore(), $core);
     }
 }

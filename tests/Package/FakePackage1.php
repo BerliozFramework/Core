@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -12,25 +12,29 @@
 
 namespace Berlioz\Core\Tests\Package;
 
+use Berlioz\Config\Adapter\JsonAdapter;
+use Berlioz\Config\ConfigInterface;
 use Berlioz\Core\Core;
 use Berlioz\Core\Package\AbstractPackage;
-use Berlioz\ServiceContainer\Service;
+use Berlioz\ServiceContainer\Container;
+use Berlioz\ServiceContainer\Service\Service;
+use DateTime;
 
 class FakePackage1 extends AbstractPackage
 {
-    public static $foo = false;
+    public static bool $foo = false;
 
-    public static function config()
+    public static function config(): ?ConfigInterface
     {
-        return realpath(__DIR__ . '/fake.package1.config.json');
+        return new JsonAdapter(__DIR__ . '/fake.package1.config.json', true);
     }
 
-    public static function register(Core $core): void
+    public static function register(Container $container): void
     {
-        self::addService($core, new Service(\DateTime::class, 'date'));
+        $container->addService(new Service(DateTime::class, 'date'));
     }
 
-    public function init(): void
+    public static function boot(Core $core): void
     {
         self::$foo = true;
     }

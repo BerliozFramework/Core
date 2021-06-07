@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -14,22 +14,15 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug;
 
+use Berlioz\Core\Debug\Snapshot\Section;
+
 /**
  * Class AbstractSection.
- *
- * @package Berlioz\Core\Debug
  */
 abstract class AbstractSection implements Section
 {
     /**
-     * @inheritdoc
-     */
-    public function saveReport()
-    {
-    }
-
-    /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSectionId(): string
     {

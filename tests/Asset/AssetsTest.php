@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -12,8 +12,6 @@
 
 namespace Berlioz\Core\Tests\Asset;
 
-use Berlioz\Config\ConfigInterface;
-use Berlioz\Config\JsonConfig;
 use Berlioz\Core\Asset\Assets;
 use Berlioz\Core\Asset\EntryPoints;
 use Berlioz\Core\Asset\Manifest;
@@ -21,24 +19,21 @@ use PHPUnit\Framework\TestCase;
 
 class AssetsTest extends TestCase
 {
-    private function getConfig(): ConfigInterface
+    public function testEmpty()
     {
-        return new JsonConfig(
-            '{
-    "berlioz": {
-        "assets": {
-            "manifest": "' . addslashes(realpath(__DIR__ . '/../_files/manifest.json')) . '",
-            "entrypoints": "' . addslashes(realpath(__DIR__ . '/../_files/entrypoints.target.json')) . '",
-            "entrypoints_key": "entrypoints"
-        }
-    }
-}'
-        );
+        $assets = new Assets();
+
+        $this->assertNull($assets->getManifest());
+        $this->assertNull($assets->getEntryPoints());
     }
 
     public function testGetEntryPoints()
     {
-        $assets = new Assets($this->getConfig());
+        $assets = new Assets(
+            manifestFile: null,
+            entryPointsFile: __DIR__ . '/files/entrypoints.json',
+            entryPointsKey: null,
+        );
 
         $this->assertInstanceOf(EntryPoints::class, $entryPoints = $assets->getEntryPoints());
         $this->assertSame($entryPoints, $assets->getEntryPoints());
@@ -46,7 +41,7 @@ class AssetsTest extends TestCase
 
     public function testGetManifest()
     {
-        $assets = new Assets($this->getConfig());
+        $assets = new Assets(manifestFile: __DIR__ . '/files/manifest.json');
 
         $this->assertInstanceOf(Manifest::class, $manifest = $assets->getManifest());
         $this->assertSame($manifest, $assets->getManifest());

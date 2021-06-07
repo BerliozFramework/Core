@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -14,50 +14,43 @@ declare(strict_types=1);
 
 namespace Berlioz\Core;
 
-use Berlioz\Config\ConfigInterface;
+use Berlioz\Config\Config;
 use Berlioz\Config\Exception\ConfigException;
-use Berlioz\Config\ExtendedJsonConfig;
 use Berlioz\Core\Cache\CacheManager;
-use Berlioz\Core\Cache\NullCacheManager;
+use Berlioz\Core\Composer\Composer;
+use Berlioz\Core\Container\ContainerBuilder;
+use Berlioz\Core\Debug\DebugHandler;
+use Berlioz\Core\Debug\Snapshot\TimelineActivity as TimelineActivity;
+use Berlioz\Core\Debug\SnapshotLoader;
 use Berlioz\Core\Directories\DefaultDirectories;
 use Berlioz\Core\Directories\DirectoriesInterface;
+use Berlioz\Core\Event\EventDispatcher;
 use Berlioz\Core\Exception\BerliozException;
-use Berlioz\Core\Exception\ComposerException;
-use Berlioz\Core\Exception\ContainerException;
+use Berlioz\Core\Factory\CoreCacheFactory;
 use Berlioz\Core\Package\PackageSet;
-use Berlioz\ServiceContainer\Service;
-use Berlioz\ServiceContainer\ServiceContainer;
+use Berlioz\ServiceContainer\Container;
 use Locale;
+use Psr\SimpleCache\CacheException;
 use Psr\SimpleCache\CacheInterface;
-use Psr\SimpleCache\InvalidArgumentException;
-use Serializable;
 use Throwable;
 
 /**
  * Class Core.
- *
- * @package Berlioz\Core
  */
-class Core implements Serializable
+class Core
 {
-    /** @var Composer */
-    protected $composer;
-    /** @var CacheInterface */
-    protected $cache;
-    /** @var ConfigInterface Configuration */
-    protected $config;
-    /** @var Debug */
-    protected $debug;
-    /** @var DirectoriesInterface Directories */
-    protected $directories;
-    /** @var string Locale */
-    protected $locale;
-    /** @var ServiceContainer Service container */
-    protected $serviceContainer;
-    /** @var array Terminate callbacks */
-    protected $terminateCallbacks = [];
-    /** @var PackageSet Packages */
-    protected $packages;
+    public const ENV_PROD = 'prod';
+    public const ENV_DEV = 'dev';
+
+    protected DebugHandler $debugHandler;
+    protected DirectoriesInterface $directories;
+    protected Filesystem $filesystem;
+    protected CacheInterface $cache;
+    protected Composer $composer;
+    protected Config $config;
+    protected PackageSet $packages;
+    protected Container $container;
+    protected EventDispatcher $eventDispatcher;
 
     /**
      * Core constructor.
@@ -67,507 +60,132 @@ class Core implements Serializable
      *
      * @throws BerliozException
      */
-    public function __construct(?DirectoriesInterface $directories = null, $cache = true)
+    public function __construct(?DirectoriesInterface $directories = null, CacheInterface|bool $cache = true)
     {
-        // Debug
-        $phpActivity = new Debug\Activity('PHP initialization', 'Berlioz');
-        if ($_SERVER['REQUEST_TIME_FLOAT']) {
-            $phpActivity->start($_SERVER['REQUEST_TIME_FLOAT'])->end();
-        }
-        $berliozActivity = (new Debug\Activity('Start', 'Berlioz'))->start();
-
-        // Directories
         $this->directories = $directories ?? new DefaultDirectories();
+        $this->cache = new CacheManager($cache, $this->directories);
 
-        // Cache manager
-        $this->cache = new NullCacheManager();
-        if ($cache === true) {
-            $this->cache = new CacheManager($this->getDirectories());
+        // Boot
+        $this->boot();
+    }
+
+    public function __destruct()
+    {
+        // Save debug report
+        if ($this->debugHandler->isEnabled()) {
+            try {
+                $snapshotLoader = new SnapshotLoader($this->filesystem);
+                $snapshotLoader->save($this->debugHandler->getSnapshot());
+            } catch (Throwable) {
+                trigger_error('Unable to save debug snapshot', E_USER_WARNING);
+            }
         }
-        if ($cache instanceof CacheInterface) {
-            $this->cache = $cache;
-        }
-
-        // Init framework
-        $this->init();
-
-        $this->getDebug()->getTimeLine()->addActivity($phpActivity);
-        $this->getDebug()->getTimeLine()->addActivity($berliozActivity->end());
     }
 
     /**
-     * Core destructor.
+     * PHP serialize method.
      *
      * @throws BerliozException
      */
-    public function __destruct()
-    {
-        $this->terminate();
-    }
-
-    /////////////////////
-    /// SERIALIZATION ///
-    /////////////////////
-
-    /**
-     * @inheritdoc
-     * @throws BerliozException
-     */
-    public function serialize()
+    public function __serialize(): array
     {
         throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
     }
 
     /**
-     * @inheritdoc
+     * Boot.
+     *
      * @throws BerliozException
      */
-    public function unserialize($serialized)
+    public function boot()
     {
-        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
+        try {
+            // Debug
+            $phpActivity = new TimelineActivity('PHP initialization', 'Berlioz');
+            $phpActivity->start($_SERVER['REQUEST_TIME_FLOAT'] ?? null)->end();
+            $bootActivity = (new TimelineActivity('Boot', 'Berlioz'))->start();
+
+            // Debug handler
+            $this->debugHandler = new DebugHandler();
+            $this->debugHandler->handle($this);
+
+            // Filesystem
+            $this->filesystem = new Filesystem($this->directories);
+
+            // Core components
+            $coreFactory = new CoreCacheFactory($this);
+            $coreFactory->build();
+            $this->composer = $coreFactory->getComposer();
+            $this->config = $coreFactory->getConfig();
+            $this->packages = $coreFactory->getPackages();
+
+            // Container
+            $containerBuilder = new ContainerBuilder($this);
+            $containerBuilder->addDefaultProviders();
+            $containerBuilder->addProvidersFromConfig();
+            $this->container = $containerBuilder->getContainer();
+
+            // Get locale from config if not null (default value)
+            if (null !== ($locale = $this->config->get('berlioz.locale'))) {
+                if (Locale::setDefault($locale) !== true) {
+                    throw new BerliozException(sprintf('Unable to set locale "%s", not valid', $locale));
+                }
+            }
+
+            // Register packages
+            $packagesActivity = (new TimelineActivity('Packages', 'Berlioz'))->start();
+            $this->packages->register($this->container);
+
+            // Activate debug
+            $this->debugHandler->setEnabled($this->debugHandler->isEnabledInConfig($this->getConfig()));
+            $this->debugHandler->addActivity(
+                $phpActivity,
+                $bootActivity->end(),
+                $packagesActivity
+            );
+
+            // Boot packages
+            $this->packages->boot($this);
+            $packagesActivity->end();
+        } catch (Throwable | CacheException $exception) {
+            throw new BerliozException('Berlioz boot error', 0, $exception);
+        }
     }
 
-    /////////////
-    /// CACHE ///
-    /////////////
+    ///////////////
+    /// GETTERS ///
+    ///////////////
+
+    /**
+     * Get environment.
+     *
+     * @return string
+     * @throws ConfigException
+     */
+    public function getEnv(): string
+    {
+        return $this->getConfig()->get('berlioz.environment', static::ENV_DEV);
+    }
+
+    /**
+     * Get debug handler.
+     *
+     * @return DebugHandler
+     */
+    public function getDebug(): DebugHandler
+    {
+        return $this->debugHandler;
+    }
 
     /**
      * Get cache manager.
      *
-     * @return CacheInterface
+     * @return CacheManager
      */
-    public function getCacheManager(): CacheInterface
+    public function getCache(): CacheManager
     {
         return $this->cache;
     }
-
-    /**
-     * Is cache enabled?
-     *
-     * @return bool
-     */
-    public function isCacheEnabled(): bool
-    {
-        return
-            $this->cache instanceof CacheInterface &&
-            !$this->cache instanceof NullCacheManager;
-    }
-
-    /**
-     * Load Core from cache.
-     *
-     * @return bool Returns TRUE if Core loaded from cache
-     * @throws BerliozException
-     */
-    protected function loadCache(): bool
-    {
-        $cacheActivity = (new Debug\Activity('Cache (load)', 'Berlioz'))->start();
-
-        try {
-            // No cache manager?
-            if (!$this->isCacheEnabled()) {
-                return false;
-            }
-
-            // No data in cache?
-            if (empty($cache = $this->getCacheManager()->get('berlioz-core'))) {
-                return false;
-            }
-
-            $this->config = $cache['config'] ?? null;
-            $this->locale = $cache['locale'] ?? null;
-            $this->serviceContainer = $cache['serviceContainer'] ?? null;
-            $this->packages = $cache['packages'] ?? null;
-
-            $this->addDefaultServices();
-
-            $this->getDebug()->getTimeLine()->addActivity($cacheActivity->end());
-
-            return true;
-        } catch (InvalidArgumentException $e) {
-            throw new BerliozException('Cache error', 0, $e);
-        }
-    }
-
-    /**
-     * Save Core to cache.
-     *
-     * @return bool
-     * @throws BerliozException
-     */
-    protected function saveCache(): bool
-    {
-        $cacheActivity = $this->getDebug()->newActivity('Cache (saving)', 'Berlioz')->start();
-
-        try {
-            // No cache manager?
-            if (!$this->isCacheEnabled()) {
-                return false;
-            }
-
-            return
-                $this->getCacheManager()
-                    ->set(
-                        'berlioz-core',
-                        [
-                            'config' => $this->config,
-                            'locale' => $this->locale,
-                            'serviceContainer' => $this->serviceContainer,
-                            'packages' => $this->packages,
-                        ]
-                    );
-        } catch (InvalidArgumentException $e) {
-            throw new BerliozException('Cache error', 0, $e);
-        } finally {
-            $cacheActivity->end();
-        }
-    }
-
-    ////////////////////////////////////
-    /// INITIALIZATION / TERMINATION ///
-    ////////////////////////////////////
-
-    /**
-     * Initialization.
-     *
-     * @throws BerliozException
-     */
-    protected function init()
-    {
-        try {
-            if (!$this->loadCache()) {
-                // Init default configuration
-                $this->initConfig();
-
-                // Init service container
-                $this->initServiceContainer();
-
-                // Register packages (configuration & services)
-                $this->getPackages()->register($this->getServiceContainer()->getInstantiator());
-
-                // Event to save cache
-                $this->onTerminate(
-                    function () {
-                        if ($this->isCacheEnabled()) {
-                            $this->saveCache();
-                        }
-                    }
-                );
-            }
-
-            // Init packages
-            $this->getPackages()->init($this->getServiceContainer()->getInstantiator());
-        } catch (BerliozException $e) {
-            throw $e;
-        } catch (Throwable $e) {
-            throw new BerliozException('Initialization error', 0, $e);
-        }
-    }
-
-    /**
-     * Termination.
-     *
-     * @throws BerliozException
-     */
-    public function terminate()
-    {
-        $coreActivity = $this->getDebug()->newActivity('Core terminate', 'Berlioz')->start();
-
-        foreach ($this->terminateCallbacks as $callback) {
-            $callback($this);
-        }
-
-        $coreActivity->end()->setDetail(sprintf('%d callback(s)', count($this->terminateCallbacks)));
-
-        // Save debug report if debug enabled
-        if ($this->getDebug()->isEnabled()) {
-            try {
-                $debugDir = $this->getDirectories()->getDebugDir();
-                if (is_dir($debugDir) || mkdir($debugDir, 0777, true)) {
-                    file_put_contents(
-                        $debugDir . DIRECTORY_SEPARATOR . $this->getDebug()->getUniqid() . '.debug',
-                        $this->getDebug()->saveReport()
-                    );
-                }
-            } catch (Throwable $e) {
-            }
-        }
-    }
-
-    /**
-     * On terminate.
-     *
-     * @param callable $callback
-     *
-     * @return static
-     */
-    public function onTerminate(callable $callback): Core
-    {
-        $this->terminateCallbacks[] = $callback;
-
-        return $this;
-    }
-
-    //////////////
-    /// DEBUG ///
-    //////////////
-
-    /**
-     * Get debug manager.
-     *
-     * @return Debug
-     * @throws BerliozException
-     */
-    public function getDebug(): Debug
-    {
-        if (null === $this->debug) {
-            $this->debug = new Debug($this);
-        }
-
-        return $this->debug;
-    }
-
-    //////////////
-    /// CONFIG ///
-    //////////////
-
-    /**
-     * Init configuration.
-     *
-     * @return ConfigInterface
-     * @throws BerliozException
-     */
-    protected function initConfig(): ConfigInterface
-    {
-        $configActivity = (new Debug\Activity('Configuration', 'Berlioz'))->start();
-
-        try {
-            // Create configuration (from default configuration)
-            $configFile = implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'resources', 'config.default.json']);
-            $this->config = new ExtendedJsonConfig($configFile, true);
-
-            // Init default configuration
-            $this->config->setVariables(
-                [
-                    'berlioz.directories.working' => $this->getDirectories()->getWorkingDir(),
-                    'berlioz.directories.app' => $this->getDirectories()->getAppDir(),
-                    'berlioz.directories.config' => $this->getDirectories()->getConfigDir(),
-                    'berlioz.directories.cache' => $this->getDirectories()->getCacheDir(),
-                    'berlioz.directories.log' => $this->getDirectories()->getLogDir(),
-                    'berlioz.directories.debug' => $this->getDirectories()->getDebugDir(),
-                    'directory_separator' => DIRECTORY_SEPARATOR,
-                ]
-            );
-
-            // Init user configuration
-            $userConfig = new ExtendedJsonConfig('{}');
-
-            // Search user configs and add
-            foreach (glob($this->getDirectories()->getConfigDir() . DIRECTORY_SEPARATOR . '*.json') as $configFile) {
-                $userConfig->merge(new ExtendedJsonConfig($configFile, true));
-            }
-
-            // Add packages from Composer
-            $this->getPackages()->addPackagesFromComposer($this->getComposer());
-
-            // Add packages from configurations
-            $this->getPackages()->addPackagesFromConfig($this->config, $userConfig);
-
-            // Get configuration of packages
-            $this->getPackages()->config($this->config);
-
-            // Merge user configuration
-            $this->config->merge($userConfig);
-        } catch (BerliozException $e) {
-            throw $e;
-        } catch (Throwable $e) {
-            throw new BerliozException('Configuration error', 0, $e);
-        } finally {
-            $this->getDebug()->getTimeLine()->addActivity($configActivity->end());
-        }
-
-        return $this->config;
-    }
-
-    /**
-     * Get configuration.
-     *
-     * @return ConfigInterface|null
-     */
-    public function getConfig(): ?ConfigInterface
-    {
-        return $this->config;
-    }
-
-    /////////////////////////
-    /// SERVICE CONTAINER ///
-    /////////////////////////
-
-    /**
-     * Get service container.
-     *
-     * @return ServiceContainer
-     */
-    public function getServiceContainer(): ServiceContainer
-    {
-        return $this->serviceContainer;
-    }
-
-    /**
-     * Init service container.
-     *
-     * @return ServiceContainer
-     * @throws BerliozException
-     */
-    public function initServiceContainer()
-    {
-        $containerActivity = $this->getDebug()->newActivity('Service container (initialization)', 'Berlioz')->start();
-
-        try {
-            $this->serviceContainer = new ServiceContainer();
-            $this->addDefaultServices();
-            $servicesConfig = $this->getConfig()->get('services', []);
-
-            // Add services from configuration
-            foreach ($servicesConfig as $serviceAlias => $serviceConfig) {
-                // If service config is a string, so a class
-                if (is_string($serviceConfig)) {
-                    $this->serviceContainer->add(new Service($serviceConfig));
-                    continue;
-                }
-
-                // If not an array, continue, because not a class and not a config
-                if (!is_array($serviceConfig)) {
-                    continue;
-                }
-
-                if (empty($serviceConfig['class'])) {
-                    throw new ContainerException(
-                        sprintf('Missing class in configuration of service key "%s"', $serviceAlias)
-                    );
-                }
-
-                // Create service object
-                $service = new Service($serviceConfig['class'], !is_numeric($serviceAlias) ? $serviceAlias : null);
-
-                if (!empty($serviceConfig['factory'])) {
-                    $service->setFactory($serviceConfig['factory']);
-                }
-
-                // Arguments
-                $service->addArguments($serviceConfig['arguments'] ?? []);
-
-                // Calls
-                foreach ($serviceConfig['calls'] ?? [] as $call) {
-                    $service->addCall($call['method'], $call['arguments'] ?? []);
-                }
-
-                $this->serviceContainer->add($service);
-            }
-
-            return $this->serviceContainer;
-        } catch (\Berlioz\ServiceContainer\Exception\ContainerException $e) {
-            throw new ContainerException('Service container error', 0, $e);
-        } catch (ConfigException $e) {
-            throw new BerliozException('Configuration error', 0, $e);
-        } finally {
-            $containerActivity->end();
-        }
-    }
-
-    /**
-     * Add default services.
-     *
-     * @throws BerliozException
-     */
-    private function addDefaultServices()
-    {
-        try {
-            // Add default services to container
-            $this->getServiceContainer()->add(new Service($this, 'berlioz'));
-            $this->getServiceContainer()->add(new Service($this->getConfig(), 'config'));
-            $this->getServiceContainer()->add(new Service($this->getDirectories(), 'directories'));
-        } catch (Throwable $e) {
-            throw new BerliozException('Unable to add default services');
-        }
-    }
-
-    ////////////////
-    /// COMPOSER ///
-    ////////////////
-
-    /**
-     * Get composer.
-     *
-     * @return Composer
-     * @throws ComposerException
-     */
-    public function getComposer(): Composer
-    {
-        if (null === $this->composer) {
-            $this->composer = new Composer(
-                $this->getDirectories()->getAppDir() . DIRECTORY_SEPARATOR . 'composer.json'
-            );
-        }
-
-        return $this->composer;
-    }
-
-    ////////////////
-    /// PACKAGES ///
-    ////////////////
-
-    /**
-     * Get packages set.
-     *
-     * @return PackageSet
-     */
-    public function getPackages(): PackageSet
-    {
-        if (null === $this->packages) {
-            $this->packages = new PackageSet();
-        }
-
-        return $this->packages;
-    }
-
-    //////////////
-    /// LOCALE ///
-    //////////////
-
-    /**
-     * Get locale.
-     *
-     * @return string
-     * @see \Locale
-     */
-    public function getLocale(): string
-    {
-        return $this->locale ?: Locale::getDefault();
-    }
-
-    /**
-     * Set locale.
-     *
-     * @param string $locale
-     *
-     * @return Core
-     * @throws BerliozException
-     * @see \Locale
-     */
-    public function setLocale(string $locale): Core
-    {
-        if (Locale::setDefault($locale) !== true) {
-            throw new BerliozException(sprintf('Locale "%s" is not correct', $locale));
-        }
-        $this->locale = $locale;
-
-        return $this;
-    }
-
-    ///////////////////
-    /// DIRECTORIES ///
-    ///////////////////
 
     /**
      * Get directories.
@@ -577,5 +195,76 @@ class Core implements Serializable
     public function getDirectories(): DirectoriesInterface
     {
         return $this->directories;
+    }
+
+    /**
+     * Get filesystem.
+     *
+     * @return Filesystem
+     */
+    public function getFilesystem(): Filesystem
+    {
+        return $this->filesystem;
+    }
+
+    /**
+     * Get composer.
+     *
+     * @return Composer
+     */
+    public function getComposer(): Composer
+    {
+        return $this->composer;
+    }
+
+    /**
+     * Get configuration.
+     *
+     * @return Config
+     */
+    public function getConfig(): Config
+    {
+        return $this->config;
+    }
+
+    /**
+     * Get packages set.
+     *
+     * @return PackageSet
+     */
+    public function getPackages(): PackageSet
+    {
+        return $this->packages;
+    }
+
+    /**
+     * Get container.
+     *
+     * @return Container
+     */
+    public function getContainer(): Container
+    {
+        return $this->container;
+    }
+
+    /**
+     * Get event dispatcher.
+     *
+     * @return EventDispatcher
+     */
+    public function getEventDispatcher(): EventDispatcher
+    {
+        return $this->container->get(EventDispatcher::class);
+    }
+
+    /**
+     * Get locale.
+     *
+     * @return string
+     * @see \Locale
+     */
+    public function getLocale(): string
+    {
+        return Locale::getDefault();
     }
 }

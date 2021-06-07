@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -19,13 +19,30 @@ class DefaultDirectoriesTest extends TestCase
 {
     private function getAppDirectory(): string
     {
-        return realpath(__DIR__ . '/../_envTest');
+        return realpath(__DIR__ . '/../../tests_env');
     }
 
     private function getDefaultDirectories(): DefaultDirectories
     {
-        chdir($workingDirectory = realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public'));
+        chdir(realpath($this->getAppDirectory() . DIRECTORY_SEPARATOR . 'public'));
         return new FakeDefaultDirectories();
+    }
+
+    public function testGetArrayCopy()
+    {
+        $this->assertEquals(
+            [
+                'app' => $this->getDefaultDirectories()->getAppDir(),
+                'working' => $this->getDefaultDirectories()->getWorkingDir(),
+                'config' => $this->getDefaultDirectories()->getConfigDir(),
+                'debug' => $this->getDefaultDirectories()->getDebugDir(),
+                'log' => $this->getDefaultDirectories()->getLogDir(),
+                'cache' => $this->getDefaultDirectories()->getCacheDir(),
+                'var' => $this->getDefaultDirectories()->getVarDir(),
+                'vendor' => $this->getDefaultDirectories()->getVendorDir(),
+            ],
+            $this->getDefaultDirectories()->getArrayCopy()
+        );
     }
 
     public function testGetWorkingDir()

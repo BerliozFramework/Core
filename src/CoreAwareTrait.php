@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -16,13 +16,10 @@ namespace Berlioz\Core;
 
 /**
  * Trait CoreAwareTrait.
- *
- * @package Berlioz\Core
  */
 trait CoreAwareTrait
 {
-    /** @var Core Core */
-    private $core;
+    protected Core $core;
 
     /**
      * Get core.
@@ -31,7 +28,7 @@ trait CoreAwareTrait
      */
     public function getCore(): ?Core
     {
-        return $this->core;
+        return $this->core ?? null;
     }
 
     /**
@@ -41,7 +38,7 @@ trait CoreAwareTrait
      *
      * @return static
      */
-    public function setCore(Core $core)
+    public function setCore(Core $core): static
     {
         $this->core = $core;
 

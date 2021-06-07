@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -20,7 +20,7 @@ class ManifestTest extends TestCase
 {
     private function getManifest(): Manifest
     {
-        return new Manifest(__DIR__ . '/../_files/manifest.json');
+        return new Manifest(__DIR__ . '/files/manifest.json');
     }
 
     public function testHasAsset()
@@ -44,9 +44,9 @@ class ManifestTest extends TestCase
 
     public function testGetNotExists()
     {
-        $manifest = $this->getManifest();
-
         $this->expectException(AssetException::class);
-        $this->assertEquals('/assets/test3.1234567890.js', $manifest->get('/test-notexists.js'));
+
+        $manifest = $this->getManifest();
+        $manifest->get('/test-notexists.js');
     }
 }

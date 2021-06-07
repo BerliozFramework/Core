@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -21,19 +21,19 @@ class JsonAssetTest extends TestCase
 {
     public function test__construct()
     {
-        $jsonAsset = $this->getMockForAbstractClass(JsonAsset::class, [__DIR__ . '/../_files/manifest.json']);
+        $jsonAsset = $this->getMockForAbstractClass(JsonAsset::class, [__DIR__ . '/files/manifest.json']);
         $this->assertInstanceOf(JsonAsset::class, $jsonAsset);
     }
 
     public function test__constructBadJson()
     {
         $this->expectException(AssetException::class);
-        $jsonAsset = $this->getMockForAbstractClass(Manifest::class, [__DIR__ . '/../_files/manifest.bad.json']);
+        $this->getMockForAbstractClass(Manifest::class, [__DIR__ . '/files/manifest.bad.json']);
     }
 
     public function test__constructJsonNotExists()
     {
         $this->expectException(AssetException::class);
-        $jsonAsset = $this->getMockForAbstractClass(JsonAsset::class, [__DIR__ . '/../_files/manifest.notexists.json']);
+        $this->getMockForAbstractClass(JsonAsset::class, [__DIR__ . '/files/manifest.notexists.json']);
     }
 }

@@ -1,9 +1,9 @@
 <?php
-/**
+/*
  * This file is part of Berlioz framework.
  *
  * @license   https://opensource.org/licenses/MIT MIT License
- * @copyright 2020 Ronan GIRON
+ * @copyright 2021 Ronan GIRON
  * @author    Ronan GIRON <https://github.com/ElGigi>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -14,39 +14,30 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Package;
 
+use Berlioz\Config\Config;
 use Berlioz\Config\ConfigInterface;
-use Berlioz\Config\Exception\ConfigException;
-use Berlioz\Config\ExtendedJsonConfig;
-use Berlioz\Core\Composer;
-use Berlioz\Core\Exception\ComposerException;
+use Berlioz\Core\Core;
 use Berlioz\Core\Exception\PackageException;
-use Berlioz\ServiceContainer\Instantiator;
-use Serializable;
+use Berlioz\ServiceContainer\Container;
 use Throwable;
 
 /**
  * Class PackageSet.
- *
- * @package Berlioz\Core\Package
  */
-class PackageSet implements Serializable
+class PackageSet
 {
-    /** @var string[] Packages */
-    private $packagesClasses = [];
-    /** @var PackageInterface[] Packages instances */
-    private $packages = [];
+    private array $packages = [];
 
     /**
-     * Magic method __debugInfo().
+     * PackageSet constructor.
      *
-     * @return array
+     * @param array $packages
+     *
+     * @throws PackageException
      */
-    public function __debugInfo(): array
+    public function __construct(array $packages = [])
     {
-        return [
-            'packagesClasses' => $this->packagesClasses,
-            'packages' => $this->packages,
-        ];
+        $this->addPackage(...$packages);
     }
 
     ////////////////////
@@ -54,25 +45,25 @@ class PackageSet implements Serializable
     ////////////////////
 
     /**
-     * @inheritdoc
+     * PHP serialize function.
+     *
+     * @return array
      */
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(
-            [
-                'packagesClasses' => $this->packagesClasses,
-            ]
-        );
+        return [
+            'packages' => $this->packages,
+        ];
     }
 
     /**
-     * @inheritdoc
+     * PHP unserialize function.
+     *
+     * @param array $data
      */
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $unserialized = unserialize($serialized);
-
-        $this->packagesClasses = $unserialized['packagesClasses'] ?? [];
+        $this->packages = $data['packages'] ?? [];
     }
 
     //////////////////////////////
@@ -86,98 +77,29 @@ class PackageSet implements Serializable
      */
     public function getPackages(): array
     {
-        return $this->packagesClasses;
+        return $this->packages;
     }
 
     /**
      * Add a package.
      *
-     * @param string $packageClass
+     * @param string ...$package
      *
-     * @return static
      * @throws PackageException
      */
-    public function addPackage(string $packageClass): PackageSet
+    public function addPackage(string ...$package): void
     {
-        if (in_array($packageClass, $this->packagesClasses)) {
-            return $this;
-        }
-
-        if (!is_a($packageClass, PackageInterface::class, true)) {
-            throw new PackageException(
-                sprintf('Class "%s" must implements "%s" interface', $packageClass, PackageInterface::class)
-            );
-        }
-
-        $this->packagesClasses[] = $packageClass;
-
-        return $this;
-    }
-
-    /**
-     * Add packages.
-     *
-     * @param array $packagesClasses
-     *
-     * @return static
-     * @throws PackageException
-     */
-    public function addPackages(array $packagesClasses): PackageSet
-    {
-        foreach ($packagesClasses as $packageClass) {
-            $this->addPackage($packageClass);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Add packages from configuration.
-     *
-     * @param ConfigInterface ...$config
-     *
-     * @return static
-     * @throws PackageException
-     * @throws ConfigException
-     */
-    public function addPackagesFromConfig(ConfigInterface ...$config): PackageSet
-    {
-        foreach ($config as $aConfig) {
-            $packages = $aConfig->get('packages', []);
-
-            if (!is_array($packages)) {
-                throw new PackageException('"packages" configuration entry must be an array of classes');
+        array_walk(
+            $package,
+            function ($class) {
+                if (!is_a($class, PackageInterface::class, true)) {
+                    throw PackageException::invalidPackage($class);
+                }
             }
+        );
 
-            $this->addPackages($packages);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Add packages from composer.
-     *
-     * @param Composer $composer
-     *
-     * @return static
-     * @throws ComposerException
-     * @throws PackageException
-     */
-    public function addPackagesFromComposer(Composer $composer): PackageSet
-    {
-        $composerPackages = $composer->getPackages();
-
-        // Load default configuration of packages
-        foreach ($composerPackages as $composerPackage) {
-            if (empty($composerPackage['config']['berlioz']['package'])) {
-                continue;
-            }
-
-            $this->addPackage($composerPackage['config']['berlioz']['package']);
-        }
-
-        return $this;
+        array_push($this->packages, ...$package);
+        $this->packages = array_unique($this->packages);
     }
 
     //////////////////////
@@ -185,123 +107,58 @@ class PackageSet implements Serializable
     //////////////////////
 
     /**
-     * Config of packages.
+     * Get packages config.
      *
-     * @param ConfigInterface $config
-     *
-     * @return static
-     * @throws PackageException
+     * @return ConfigInterface
      */
-    public function config(ConfigInterface $config): PackageSet
+    public function config(): ConfigInterface
     {
-        /** * @var PackageInterface $package */
-        foreach ($this->packagesClasses as $package) {
-            try {
-                $packageConfig = $package::config();
+        $config = new Config();
 
-                // No configuration
-                if (null === $packageConfig) {
-                    continue;
-                }
+        foreach ($this->packages as $package) {
+            $packageConfig = call_user_func([$package, 'config']);
 
-                // ConfigInterface
-                if ($packageConfig instanceof ConfigInterface) {
-                    $config->merge($packageConfig);
-                    continue;
-                }
-
-                // Array
-                if (is_array($packageConfig)) {
-                    $config->merge(new ExtendedJsonConfig(json_encode($packageConfig)));
-                    continue;
-                }
-
-                // String?
-                if (is_string($packageConfig)) {
-                    $config->merge(new ExtendedJsonConfig($packageConfig, true));
-                    continue;
-                }
-
-                throw new PackageException(
-                    sprintf(
-                        'Configuration of package "%s" must be a ConfigInterface, an array, a filename, or NULL',
-                        $package
-                    )
-                );
-            } catch (PackageException $e) {
-                throw $e;
-            } catch (Throwable $e) {
-                throw new PackageException(sprintf('Error during registration of package "%s"', $package), 0, $e);
+            if (null === $packageConfig) {
+                continue;
             }
+
+            $config->addConfig($packageConfig);
         }
 
-        return $this;
+        return $config;
     }
 
     /**
      * Register packages.
      *
-     * @param Instantiator $instantiator
+     * @param Container $container
      *
      * @return static
-     * @throws PackageException
      */
-    public function register(Instantiator $instantiator): PackageSet
+    public function register(Container $container): PackageSet
     {
-        /** * @var PackageInterface $package */
-        foreach ($this->packagesClasses as $package) {
-            try {
-                $instantiator->invokeMethod($package, 'register');
-            } catch (Throwable $e) {
-                throw new PackageException(sprintf('Error during registration of package "%s"', $package), 0, $e);
-            }
+        foreach ($this->packages as $package) {
+            call_user_func([$package, 'register'], $container);
         }
 
         return $this;
     }
 
     /**
-     * Instantiate packages.
+     * Boot packages.
      *
-     * @param Instantiator $instantiator
-     *
-     * @return static
-     * @throws PackageException
-     */
-    protected function instantiate(Instantiator $instantiator): PackageSet
-    {
-        foreach ($this->packagesClasses as $packageClass) {
-            try {
-                if (array_key_exists($packageClass, $this->packages)) {
-                    continue;
-                }
-
-                $this->packages[$packageClass] = $instantiator->newInstanceOf($packageClass);
-            } catch (Throwable $e) {
-                throw new PackageException(sprintf('Error during instantiation of package "%s"', $packageClass), 0, $e);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Init packages.
-     *
-     * @param Instantiator $instantiator
+     * @param Core $core
      *
      * @return static
      * @throws PackageException
      */
-    public function init(Instantiator $instantiator): PackageSet
+    public function boot(Core $core): PackageSet
     {
-        $this->instantiate($instantiator);
-
-        foreach ($this->packages as $class => $package) {
+        foreach ($this->packages as $package) {
             try {
-                $instantiator->invokeMethod($package, 'init');
-            } catch (Throwable $e) {
-                throw new PackageException(sprintf('Error during initialization of package "%s"', $class), 0, $e);
+                call_user_func([$package, 'boot'], $core);
+            } catch (Throwable $exception) {
+                throw PackageException::boot($package, $exception);
             }
         }
 
