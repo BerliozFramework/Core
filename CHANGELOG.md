@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file. This projec
 to [Semantic Versioning] (http://semver.org/). For change log format,
 use [Keep a Changelog] (http://keepachangelog.com/).
 
+## [2.0.0-beta2] - In progress
+
+### Changed
+
+- Change `Event::getEvent()` for `Event::getName()`
+- Debug event get name of event for CustomEvent
+
+### Fixed
+
+- Add subscribers from config
+- Missing start event activity for debug
+- Fix array keys of filtered activities to get memory usage
+
 ## [2.0.0-beta1] - 2021-06-07
 
 ### Added
