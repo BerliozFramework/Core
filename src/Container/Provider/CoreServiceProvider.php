@@ -85,6 +85,7 @@ class CoreServiceProvider extends AbstractServiceProvider
                 factory: function (Core $core): EventDispatcher {
                 $builder = new EventDispatcherBuilder($core);
                     $builder->addDefaultSubscribers();
+                    $builder->addSubscribersFromConfig();
 
                     return $builder->getEventDispatcher();
                 }

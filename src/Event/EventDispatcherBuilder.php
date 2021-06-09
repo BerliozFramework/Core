@@ -74,7 +74,7 @@ class EventDispatcherBuilder
      * @throws BerliozException
      * @throws ContainerException
      */
-    protected function addSubscribersFromConfig(): void
+    public function addSubscribersFromConfig(): void
     {
         try {
             foreach ((array)$this->core->getConfig()->get('events.subscribers', []) as $subscriber) {
