@@ -182,11 +182,13 @@ class Timeline implements Countable
         }
 
         $activities = $this->getActivities($group);
-        $activities = array_filter(
-            $activities,
-            function (TimelineActivity $activity) {
-                return null !== $activity->getStartMicroTime() && null !== $activity->getEndMicroTime();
-            }
+        $activities = array_values(
+            array_filter(
+                $activities,
+                function (TimelineActivity $activity) {
+                    return null !== $activity->getStartMicroTime() && null !== $activity->getEndMicroTime();
+                }
+            )
         );
         $nbActivities = count($activities);
 
