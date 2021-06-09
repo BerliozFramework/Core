@@ -36,7 +36,7 @@ class EventDispatcher extends BerliozEventDispatcher
     public function dispatch(object $event): object
     {
         $debugEvent = $this->debugHandler->newEvent($event);
-        $activity = $this->debugHandler->newEventActivity($debugEvent);
+        $activity = $this->debugHandler->newEventActivity($debugEvent)->start();
 
         try {
             return parent::dispatch($event);
