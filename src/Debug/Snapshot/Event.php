@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Debug\Snapshot;
 
+use Berlioz\EventManager\Event\CustomEvent;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -27,6 +28,9 @@ class Event
 
     public function __construct(string|object $event, DateTimeInterface $time)
     {
+        if ($event instanceof CustomEvent) {
+            $event = $event->getName();
+        }
         if (is_object($event)) {
             $event = get_class($event);
         }
@@ -35,11 +39,11 @@ class Event
     }
 
     /**
-     * Get event.
+     * Get name.
      *
      * @return string
      */
-    public function getEvent(): string
+    public function getName(): string
     {
         return $this->event;
     }

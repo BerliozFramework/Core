@@ -21,6 +21,6 @@ class TimelineEvent extends TimelineActivity
 {
     public function __construct(protected Event $event)
     {
-        parent::__construct($event->getEvent(), 'Events');
+        parent::__construct($event->getName(), 'Events');
     }
 }
