@@ -140,7 +140,7 @@ class DebugHandlerTest extends TestCase
 
         $this->assertCount(1, $handler->getSnapshot()->getTimeline());
         $this->assertSame($activity, $handler->getSnapshot()->getTimeline()->getActivities()[0]);
-        $this->assertEquals($event->getEvent(), $handler->getSnapshot()->getTimeline()->getActivities()[0]->getName());
+        $this->assertEquals($event->getName(), $handler->getSnapshot()->getTimeline()->getActivities()[0]->getName());
     }
 
     public function testNewEventActivity_debugDisabled()

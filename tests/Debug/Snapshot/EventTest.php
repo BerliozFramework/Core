@@ -24,12 +24,12 @@ class EventTest extends TestCase
     {
         $event = new Event('anEvent', $date = new DateTime());
 
-        $this->assertEquals('anEvent', $event->getEvent());
+        $this->assertEquals('anEvent', $event->getName());
         $this->assertEquals($date, $event->getTime());
 
         $event = new Event(new stdClass(), $date = new DateTimeImmutable());
 
-        $this->assertEquals(stdClass::class, $event->getEvent());
+        $this->assertEquals(stdClass::class, $event->getName());
         $this->assertEquals($date, $event->getTime());
     }
 }

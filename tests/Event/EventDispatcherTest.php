@@ -44,7 +44,7 @@ class EventDispatcherTest extends TestCase
         $this->assertCount(1, $debug->getSnapshot()->getEvents());
         $this->assertEquals(
             stdClass::class,
-            iterator_to_array($debug->getSnapshot()->getEvents()->getEvents(), false)[0]->getEvent()
+            iterator_to_array($debug->getSnapshot()->getEvents()->getEvents(), false)[0]->getName()
         );
     }
 }
