@@ -164,7 +164,7 @@ class Core
      */
     public function getEnv(): string
     {
-        return $this->getConfig()->get('berlioz.environment', static::ENV_DEV);
+        return $this->getConfig()->get('berlioz.env', static::ENV_DEV);
     }
 
     /**

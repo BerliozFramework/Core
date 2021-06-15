@@ -13,7 +13,10 @@ use [Keep a Changelog] (http://keepachangelog.com/).
 
 ### Fixed
 
-- Add subscribers from config
+- Bad config path 'berlioz.env' instead of 'berlioz.environment'
+- Retrieve of config modification time
+- Add events subscribers from config
+- Add services providers from config
 - Missing start event activity for debug
 - Fix array keys of filtered activities to get memory usage
 

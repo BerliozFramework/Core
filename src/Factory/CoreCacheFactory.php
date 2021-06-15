@@ -121,7 +121,7 @@ class CoreCacheFactory extends CoreFactory
         $lastModified =
             $fs->listContents('config://', Filesystem::LIST_DEEP)
                 ->filter(fn(StorageAttributes $attr) => $attr->isFile())
-                ->map(fn(FileAttributes $attr) => $fs->lastModified('config://' . $attr->path()))
+                ->map(fn(FileAttributes $attr) => $fs->lastModified($attr->path()))
                 ->toArray();
 
         // Composer file
@@ -152,7 +152,7 @@ class CoreCacheFactory extends CoreFactory
             // Only if all components are gotten from cache
             if (null !== $this->config && null !== $this->composer && null !== $this->packages) {
                 // It's not a development environment, so we keep cache and do not check files time!
-                if ($this->config->get('berlioz.env') != Core::ENV_DEV) {
+                if ($this->config->get('berlioz.environment') != Core::ENV_DEV) {
                     return;
                 }
 

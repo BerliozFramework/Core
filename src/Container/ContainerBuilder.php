@@ -88,6 +88,8 @@ class ContainerBuilder
                     $provider = $this->container->call($provider);
                 }
             );
+
+            $this->container->addProvider(...$providers);
         } catch (BerliozException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
