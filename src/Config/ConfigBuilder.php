@@ -23,7 +23,7 @@ use Berlioz\Config\Config;
 use Berlioz\Config\Exception\ConfigException;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Exception\BerliozException;
-use Berlioz\Core\Filesystem;
+use Berlioz\Core\Filesystem\FilesystemInterface;
 use Berlioz\Core\Package\PackageSet;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemException;
@@ -43,7 +43,7 @@ class ConfigBuilder
     private Config $config;
     private ?ExtensionMimeTypeDetector $mimeTypeDetector = null;
 
-    public function __construct(protected Filesystem $fs)
+    public function __construct(protected FilesystemInterface $fs)
     {
         $this->reset();
     }
@@ -139,7 +139,7 @@ class ConfigBuilder
             // Add project configuration
             $configs =
                 $this->fs
-                    ->listContents('config://', Filesystem::LIST_DEEP)
+                    ->listContents('config://', FilesystemInterface::LIST_DEEP)
                     ->filter(fn(StorageAttributes $attr) => $attr->isFile())
                     ->map(fn(FileAttributes $attr) => $this->getProjectConfigFile($attr));
 

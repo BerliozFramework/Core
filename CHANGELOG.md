@@ -6,6 +6,10 @@ use [Keep a Changelog] (http://keepachangelog.com/).
 
 ## [2.0.0-beta2] - In progress
 
+### Added
+
+- New `Filesystem` class to mount only necessaries filesystems
+
 ### Changed
 
 - Change `Event::getEvent()` for `Event::getName()`

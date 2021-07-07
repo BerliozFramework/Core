@@ -20,9 +20,10 @@ use Berlioz\Core\Composer\Composer;
 use Berlioz\Core\Core;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Exception\CacheException;
-use Berlioz\Core\Filesystem;
+use Berlioz\Core\Filesystem\FilesystemInterface;
 use Berlioz\Core\Package\PackageSet;
 use DateTimeImmutable;
+use Exception;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\StorageAttributes;
@@ -113,13 +114,14 @@ class CoreCacheFactory extends CoreFactory
      *
      * @return DateTimeImmutable|null
      * @throws FilesystemException
+     * @throws Exception
      */
     private function getLastModifiedTime(): ?DateTimeImmutable
     {
         // Configuration files
         $fs = $this->core->getFilesystem();
         $lastModified =
-            $fs->listContents('config://', Filesystem::LIST_DEEP)
+            $fs->listContents('config://', FilesystemInterface::LIST_DEEP)
                 ->filter(fn(StorageAttributes $attr) => $attr->isFile())
                 ->map(fn(FileAttributes $attr) => $fs->lastModified($attr->path()))
                 ->toArray();
@@ -131,15 +133,16 @@ class CoreCacheFactory extends CoreFactory
 
         $lastModified = array_filter($lastModified);
 
-        if (count($lastModified) > 0) {
+        if (count($lastModified) === 0) {
             return null;
         }
 
-        return max($lastModified);
+        return new DateTimeImmutable(sprintf('@%d', max($lastModified)));
     }
 
     /**
      * @inheritDoc
+     * @throws FilesystemException
      * @throws PsrCacheException
      */
     public function build(): void
@@ -157,7 +160,7 @@ class CoreCacheFactory extends CoreFactory
                 }
 
                 // Cache time is more older than last modified file time
-                if ($this->getCacheTime() < $this->getLastModifiedTime()) {
+                if ($this->getCacheTime() > $this->getLastModifiedTime()) {
                     return;
                 }
             }

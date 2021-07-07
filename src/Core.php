@@ -27,6 +27,7 @@ use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Event\EventDispatcher;
 use Berlioz\Core\Exception\BerliozException;
 use Berlioz\Core\Factory\CoreCacheFactory;
+use Berlioz\Core\Filesystem\FilesystemInterface;
 use Berlioz\Core\Package\PackageSet;
 use Berlioz\ServiceContainer\Container;
 use Locale;
@@ -44,7 +45,7 @@ class Core
 
     protected DebugHandler $debugHandler;
     protected DirectoriesInterface $directories;
-    protected Filesystem $filesystem;
+    protected Filesystem\FilesystemInterface $filesystem;
     protected CacheInterface $cache;
     protected Composer $composer;
     protected Config $config;
@@ -110,7 +111,7 @@ class Core
             $this->debugHandler->handle($this);
 
             // Filesystem
-            $this->filesystem = new Filesystem($this->directories);
+            $this->filesystem = new Filesystem\BerliozFilesystem($this->directories);
 
             // Core components
             $coreFactory = new CoreCacheFactory($this);
@@ -118,6 +119,12 @@ class Core
             $this->composer = $coreFactory->getComposer();
             $this->config = $coreFactory->getConfig();
             $this->packages = $coreFactory->getPackages();
+
+            // Filesystem - Final
+            $this->filesystem = new Filesystem\Filesystem(
+                $this->filesystem,
+                new Filesystem\ProjectFilesystem($this->config),
+            );
 
             // Container
             $containerBuilder = new ContainerBuilder($this);
@@ -200,9 +207,9 @@ class Core
     /**
      * Get filesystem.
      *
-     * @return Filesystem
+     * @return FilesystemInterface
      */
-    public function getFilesystem(): Filesystem
+    public function getFilesystem(): FilesystemInterface
     {
         return $this->filesystem;
     }

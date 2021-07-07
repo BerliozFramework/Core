@@ -15,7 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core\Debug;
 
 use Berlioz\Core\Exception\BerliozException;
-use Berlioz\Core\Filesystem;
+use Berlioz\Core\Filesystem\FilesystemInterface;
 use League\Flysystem\FilesystemException;
 
 /**
@@ -23,7 +23,7 @@ use League\Flysystem\FilesystemException;
  */
 class SnapshotLoader
 {
-    public function __construct(protected Filesystem $filesystem)
+    public function __construct(protected FilesystemInterface $filesystem)
     {
     }
 

@@ -14,7 +14,7 @@ namespace Berlioz\Core\Tests\Composer;
 
 use Berlioz\Core\Composer\Composer;
 use Berlioz\Core\Composer\ComposerBuilder;
-use Berlioz\Core\Filesystem;
+use Berlioz\Core\Filesystem\BerliozFilesystem;
 use Berlioz\Core\Tests\Directories\FakeDefaultDirectories;
 use Error;
 use PHPUnit\Framework\TestCase;
@@ -23,7 +23,7 @@ class ComposerBuilderTest extends TestCase
 {
     public function testReset()
     {
-        $builder = new ComposerBuilder(new Filesystem(new FakeDefaultDirectories()));
+        $builder = new ComposerBuilder(new BerliozFilesystem(new FakeDefaultDirectories()));
         $builder->build();
         $composer = $builder->getComposer();
 
@@ -36,7 +36,7 @@ class ComposerBuilderTest extends TestCase
 
     public function testBuild()
     {
-        $builder = new ComposerBuilder(new Filesystem(new FakeDefaultDirectories()));
+        $builder = new ComposerBuilder(new BerliozFilesystem(new FakeDefaultDirectories()));
         $builder->build();
         $composer = $builder->getComposer();
 

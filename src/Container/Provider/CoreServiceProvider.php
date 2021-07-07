@@ -24,6 +24,8 @@ use Berlioz\Core\Debug\DebugHandler;
 use Berlioz\Core\Directories\DirectoriesInterface;
 use Berlioz\Core\Event\EventDispatcher;
 use Berlioz\Core\Event\EventDispatcherBuilder;
+use Berlioz\Core\Filesystem\Filesystem;
+use Berlioz\Core\Filesystem\FilesystemInterface;
 use Berlioz\ServiceContainer\Container;
 use Berlioz\ServiceContainer\Inflector\Inflector;
 use Berlioz\ServiceContainer\Provider\AbstractServiceProvider;
@@ -41,6 +43,8 @@ class CoreServiceProvider extends AbstractServiceProvider
         Composer::class,
         DebugHandler::class,
         DirectoriesInterface::class,
+        Filesystem::class,
+        FilesystemInterface::class,
         'berlioz',
         'config',
         'composer',
@@ -95,6 +99,9 @@ class CoreServiceProvider extends AbstractServiceProvider
             \Berlioz\EventManager\EventDispatcher::class,
             EventDispatcherInterface::class
         );
+
+        $service = $container->add($this->core->getFilesystem(), Filesystem::class);
+        $service->addProvide(FilesystemInterface::class);
     }
 
     /**

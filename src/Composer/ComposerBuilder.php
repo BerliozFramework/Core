@@ -15,7 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core\Composer;
 
 use Berlioz\Core\Exception\ComposerException;
-use Berlioz\Core\Filesystem;
+use Berlioz\Core\Filesystem\FilesystemInterface;
 use League\Flysystem\FilesystemException;
 
 /**
@@ -25,7 +25,7 @@ class ComposerBuilder
 {
     private Composer $composer;
 
-    public function __construct(protected Filesystem $fs)
+    public function __construct(protected FilesystemInterface $fs)
     {
         $this->reset();
     }
