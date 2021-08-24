@@ -245,11 +245,6 @@ class DebugHandlerTest extends TestCase
         $config = new ArrayAdapter(['berlioz' => ['debug' => ['enable' => true, 'ip' => ['127.0.0.1']]]]);
         $this->assertTrue($debug->isEnabledInConfig($config));
 
-        $config = new ArrayAdapter(
-            ['berlioz' => ['debug' => ['enable' => true, 'ip' => [gethostbyaddr('127.0.0.1')]]]]
-        );
-        $this->assertTrue($debug->isEnabledInConfig($config));
-
         $_SERVER['REMOTE_ADDR'] = '127.0.0.2';
 
         $this->assertFalse($debug->isEnabledInConfig($config));
@@ -261,5 +256,8 @@ class DebugHandlerTest extends TestCase
         $_SERVER['REMOTE_ADDR'] = '127.0.0.3, 127.0.0.4';
 
         $this->assertFalse($debug->isEnabledInConfig($config));
+
+        $config = new ArrayAdapter(['berlioz' => ['debug' => ['enable' => true, 'ip' => [gethostbyaddr('127.0.0.1')]]]]);
+        $this->assertTrue($debug->isEnabledInConfig($config));
     }
 }
