@@ -29,9 +29,12 @@ class Manifest extends JsonAsset
      * @param string $key
      *
      * @return bool
+     * @throws AssetException
      */
     public function has(string $key): bool
     {
+        $this->loadOnce();
+
         return array_key_exists($key, $this->assets);
     }
 
@@ -45,6 +48,8 @@ class Manifest extends JsonAsset
      */
     public function get(string $key): string
     {
+        $this->loadOnce();
+
         if (!$this->has($key)) {
             throw new AssetException(sprintf('Asset "%s" does not exists in manifest', $key));
         }

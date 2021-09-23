@@ -30,9 +30,9 @@ class AssetsTest extends TestCase
     public function testGetEntryPoints()
     {
         $assets = new Assets(
-            manifestFile: null,
+            manifestFile:    null,
             entryPointsFile: __DIR__ . '/files/entrypoints.json',
-            entryPointsKey: null,
+            entryPointsKey:  null,
         );
 
         $this->assertInstanceOf(EntryPoints::class, $entryPoints = $assets->getEntryPoints());

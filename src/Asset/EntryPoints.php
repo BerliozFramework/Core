@@ -26,25 +26,27 @@ class EntryPoints extends JsonAsset
      *
      * @param string $filename Filename
      * @param string|null $target Target to get entry points
-     *
-     * @throws AssetException
      */
     public function __construct(
         string $filename,
         protected ?string $target = null
     ) {
         parent::__construct($filename);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reload(): void
+    {
+        parent::reload();
 
         if (!empty($this->target)) {
-            try {
-                if (null === ($assets = b_array_traverse_get($this->assets, $this->target))) {
-                    throw new AssetException(sprintf('Key "%s" to target entry points is invalid', $this->target));
-                }
-
-                $this->assets = (array)$assets;
-            } catch (AssetException $exception) {
-                throw $exception;
+            if (null === ($assets = b_array_traverse_get($this->assets, $this->target))) {
+                throw new AssetException(sprintf('Key "%s" to target entry points is invalid', $this->target));
             }
+
+            $this->assets = (array)$assets;
         }
     }
 
@@ -55,9 +57,12 @@ class EntryPoints extends JsonAsset
      * @param string|null $type
      *
      * @return array
+     * @throws AssetException
      */
     public function get(string $entry, ?string $type = null): array
     {
+        $this->loadOnce();
+
         if (!isset($this->assets[$entry])) {
             return [];
         }

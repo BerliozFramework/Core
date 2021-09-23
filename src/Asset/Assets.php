@@ -14,15 +14,13 @@ declare(strict_types=1);
 
 namespace Berlioz\Core\Asset;
 
-use Berlioz\Core\Exception\AssetException;
-
 /**
  * Class Assets.
  */
 class Assets
 {
-    private ?Manifest $manifest = null;
-    private ?EntryPoints $entryPoints = null;
+    private Manifest $manifest;
+    private EntryPoints $entryPoints;
 
     /**
      * Assets constructor.
@@ -30,21 +28,14 @@ class Assets
      * @param string|null $manifestFile
      * @param string|null $entryPointsFile
      * @param string|null $entryPointsKey
-     *
-     * @throws AssetException
      */
     public function __construct(
         ?string $manifestFile = null,
         ?string $entryPointsFile = null,
         ?string $entryPointsKey = null,
     ) {
-        if (null !== $manifestFile) {
-            $this->manifest = new Manifest($manifestFile);
-        }
-
-        if (null !== $entryPointsFile) {
-            $this->entryPoints = new EntryPoints($entryPointsFile, $entryPointsKey);
-        }
+        $manifestFile && $this->manifest = new Manifest($manifestFile);
+        $entryPointsFile && $this->entryPoints = new EntryPoints($entryPointsFile, $entryPointsKey);
     }
 
     /**
@@ -54,7 +45,7 @@ class Assets
      */
     public function getManifest(): ?Manifest
     {
-        return $this->manifest;
+        return $this->manifest ?? null;
     }
 
     /**
@@ -64,6 +55,6 @@ class Assets
      */
     public function getEntryPoints(): ?EntryPoints
     {
-        return $this->entryPoints;
+        return $this->entryPoints ?? null;
     }
 }

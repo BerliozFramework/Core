@@ -28,12 +28,14 @@ class JsonAssetTest extends TestCase
     public function test__constructBadJson()
     {
         $this->expectException(AssetException::class);
-        $this->getMockForAbstractClass(Manifest::class, [__DIR__ . '/files/manifest.bad.json']);
+        $jsonAsset = $this->getMockForAbstractClass(Manifest::class, [__DIR__ . '/files/manifest.bad.json']);
+        $jsonAsset->reload();
     }
 
     public function test__constructJsonNotExists()
     {
         $this->expectException(AssetException::class);
-        $this->getMockForAbstractClass(JsonAsset::class, [__DIR__ . '/files/manifest.notexists.json']);
+        $jsonAsset = $this->getMockForAbstractClass(JsonAsset::class, [__DIR__ . '/files/manifest.notexists.json']);
+        $jsonAsset->reload();
     }
 }

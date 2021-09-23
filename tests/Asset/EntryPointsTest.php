@@ -35,7 +35,8 @@ class EntryPointsTest extends TestCase
     public function testBadTarget()
     {
         $this->expectException(AssetException::class);
-        new EntryPoints(__DIR__ . '/files/entrypoints.json', 'entrypoints');
+        $entryPoints = new EntryPoints(__DIR__ . '/files/entrypoints.json', 'entrypoints');
+        $entryPoints->get('test');
     }
 
     public function testGet()
@@ -63,5 +64,13 @@ class EntryPointsTest extends TestCase
         );
         $this->assertEquals([], $entryPoints->get('foo', 'js'));
         $this->assertEquals([], $entryPoints->get('test', 'bar'));
+    }
+
+    public function testGetOnBadFilename()
+    {
+        $entryPoints = new EntryPoints('fake.json');
+
+        $this->expectException(AssetException::class);
+        $entryPoints->get('test');
     }
 }

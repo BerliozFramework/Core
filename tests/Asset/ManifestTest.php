@@ -49,4 +49,12 @@ class ManifestTest extends TestCase
         $manifest = $this->getManifest();
         $manifest->get('/test-notexists.js');
     }
+
+    public function testGetOnBadFilename()
+    {
+        $manifest = new Manifest('fake.json');
+
+        $this->expectException(AssetException::class);
+        $manifest->get('/test.js');
+    }
 }

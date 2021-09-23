@@ -22,19 +22,32 @@ use Berlioz\Core\Exception\AssetException;
 abstract class JsonAsset
 {
     protected const JSON_DEPTH = 512;
+    protected bool $loaded = false;
     protected array $assets = [];
 
     /**
      * JsonAsset constructor.
      *
      * @param string $filename
-     *
-     * @throws AssetException
      */
     public function __construct(
         protected string $filename
     ) {
+    }
+
+    /**
+     * Load first time asset.
+     *
+     * @throws AssetException
+     */
+    protected function loadOnce(): void
+    {
+        if (true === $this->loaded) {
+            return;
+        }
+
         $this->reload();
+        $this->loaded = true;
     }
 
     /**
