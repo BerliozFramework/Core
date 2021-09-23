@@ -26,6 +26,7 @@ use Berlioz\Core\Event\EventDispatcher;
 use Berlioz\Core\Event\EventDispatcherBuilder;
 use Berlioz\Core\Filesystem\Filesystem;
 use Berlioz\Core\Filesystem\FilesystemInterface;
+use Berlioz\EventManager\EventDispatcher as BerliozEventDispatcher;
 use Berlioz\ServiceContainer\Container;
 use Berlioz\ServiceContainer\Inflector\Inflector;
 use Berlioz\ServiceContainer\Provider\AbstractServiceProvider;
@@ -38,18 +39,24 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class CoreServiceProvider extends AbstractServiceProvider
 {
     protected array $provides = [
+        Assets::class,
         Core::class,
         Config::class,
         Composer::class,
         DebugHandler::class,
         DirectoriesInterface::class,
+        EventDispatcher::class,
+        BerliozEventDispatcher::class,
+        EventDispatcherInterface::class,
         Filesystem::class,
         FilesystemInterface::class,
+        'assets',
         'berlioz',
         'config',
         'composer',
         'debug',
         'directories',
+        'events',
     ];
 
     public function __construct(protected Core $core)
@@ -87,7 +94,7 @@ class CoreServiceProvider extends AbstractServiceProvider
                 class: EventDispatcher::class,
                 alias: 'events',
                 factory: function (Core $core): EventDispatcher {
-                $builder = new EventDispatcherBuilder($core);
+                    $builder = new EventDispatcherBuilder($core);
                     $builder->addDefaultSubscribers();
                     $builder->addSubscribersFromConfig();
 
@@ -96,7 +103,7 @@ class CoreServiceProvider extends AbstractServiceProvider
             )
         );
         $service->addProvide(
-            \Berlioz\EventManager\EventDispatcher::class,
+            BerliozEventDispatcher::class,
             EventDispatcherInterface::class
         );
 

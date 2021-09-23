@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. This projec
 to [Semantic Versioning] (http://semver.org/). For change log format,
 use [Keep a Changelog] (http://keepachangelog.com/).
 
+## [2.0.1] - 2021-09-23
+
+### Fixed
+
+- Services missing from the list of services provided; tests added to verify in the future
+
 ## [2.0.0] - 2021-09-08
 
 ### Fixed
