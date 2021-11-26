@@ -50,19 +50,30 @@ class Composer implements Serializable
     /// SERIALIZATION ///
     /////////////////////
 
+    public function __serialize(): array
+    {
+        return [
+            'composerJsonFilename' => $this->composerJsonFilename,
+            'composerJson' => $this->composerJson,
+            'composerLock' => $this->composerLock,
+            'packages' => $this->packages,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->composerJsonFilename = $data['composerJsonFilename'];
+        $this->composerJson = $data['composerJson'];
+        $this->composerLock = $data['composerLock'];
+        $this->packages = $data['packages'];
+    }
+
     /**
      * @inheritdoc
      */
     public function serialize()
     {
-        return serialize(
-            [
-                'composerJsonFilename' => $this->composerJsonFilename,
-                'composerJson' => $this->composerJson,
-                'composerLock' => $this->composerLock,
-                'packages' => $this->packages,
-            ]
-        );
+        return serialize($this->__serialize());
     }
 
     /**
@@ -71,11 +82,7 @@ class Composer implements Serializable
     public function unserialize($serialized): void
     {
         $unserialized = unserialize($serialized);
-
-        $this->composerJsonFilename = $unserialized['composerJsonFilename'];
-        $this->composerJson = $unserialized['composerJson'];
-        $this->composerLock = $unserialized['composerLock'];
-        $this->packages = $unserialized['packages'];
+        $this->__unserialize($unserialized);
     }
 
     //////////////////////

@@ -46,20 +46,31 @@ class TimeLine extends AbstractSection implements Countable
         return 'Activities';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize($this->activities);
+        return $this->activities;
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->activities = $data;
     }
 
     /**
      * @inheritdoc
      */
-    public function unserialize($serialized)
+    public function serialize()
     {
-        $this->activities = unserialize($serialized);
+        return serialize($this->__serialize());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized): void
+    {
+        $unserialized = unserialize($serialized);
+        $this->__unserialize($unserialized);
     }
 
     ///////////////////////////
@@ -69,7 +80,7 @@ class TimeLine extends AbstractSection implements Countable
     /**
      * @inheritdoc
      */
-    public function count()
+    public function count(): int
     {
         return count($this->activities);
     }

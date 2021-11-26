@@ -110,10 +110,17 @@ class Core implements Serializable
     /////////////////////
 
     /**
-     * @inheritdoc
      * @throws BerliozException
      */
-    public function serialize()
+    public function __serialize(): array
+    {
+        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
+    }
+
+    /**
+     * @throws BerliozException
+     */
+    public function __unserialize(array $data): void
     {
         throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
     }
@@ -122,9 +129,18 @@ class Core implements Serializable
      * @inheritdoc
      * @throws BerliozException
      */
+    public function serialize()
+    {
+        $this->__serialize();
+    }
+
+    /**
+     * @inheritdoc
+     * @throws BerliozException
+     */
     public function unserialize($serialized)
     {
-        throw new BerliozException(sprintf('Serialization of class "%s" not allowed', static::class));
+        $this->__unserialize([]);
     }
 
     /////////////

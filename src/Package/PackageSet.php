@@ -53,26 +53,31 @@ class PackageSet implements Serializable
     /// SERIALIZABLE ///
     ////////////////////
 
-    /**
-     * @inheritdoc
-     */
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(
-            [
-                'packagesClasses' => $this->packagesClasses,
-            ]
-        );
+        return $this->packagesClasses;
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->packagesClasses = $data;
     }
 
     /**
      * @inheritdoc
      */
-    public function unserialize($serialized)
+    public function serialize()
+    {
+        return serialize($this->__serialize());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized): void
     {
         $unserialized = unserialize($serialized);
-
-        $this->packagesClasses = $unserialized['packagesClasses'] ?? [];
+        $this->__unserialize($unserialized);
     }
 
     //////////////////////////////

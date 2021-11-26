@@ -30,6 +30,33 @@ class PhpError extends AbstractSection implements Countable
     /// SECTION INTERFACE ///
     /////////////////////////
 
+    public function __serialize(): array
+    {
+        return $this->phpErrors;
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->phpErrors = $data;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize()
+    {
+        return serialize($this->__serialize());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized): void
+    {
+        $unserialized = unserialize($serialized);
+        $this->__unserialize($unserialized);
+    }
+
     /**
      * @inheritdoc
      */
@@ -46,22 +73,6 @@ class PhpError extends AbstractSection implements Countable
         return 'PHP Errors';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function serialize()
-    {
-        return serialize($this->phpErrors);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function unserialize($serialized)
-    {
-        $this->phpErrors = unserialize($serialized);
-    }
-
     ///////////////////////////
     /// COUNTABLE INTERFACE ///
     ///////////////////////////
@@ -69,7 +80,7 @@ class PhpError extends AbstractSection implements Countable
     /**
      * @inheritdoc
      */
-    public function count()
+    public function count(): int
     {
         return count($this->phpErrors);
     }

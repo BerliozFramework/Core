@@ -22,7 +22,6 @@ use Berlioz\Core\Debug\Section;
 use Berlioz\Core\Debug\TimeLine;
 use Berlioz\Core\Exception\BerliozException;
 use DateTime;
-use Exception;
 use Serializable;
 use Throwable;
 
@@ -79,47 +78,53 @@ class Debug implements Serializable
         }
     }
 
+    public function __serialize(): array
+    {
+        return [
+            'uniqid' => $this->uniqid,
+            'datetime' => $this->datetime,
+            'systemInfo' => $this->systemInfo,
+            'phpInfo' => $this->phpInfo,
+            'performancesInfo' => $this->performancesInfo,
+            'projectInfo' => $this->projectInfo,
+            'config' => $this->config,
+            'timeLine' => $this->timeLine,
+            'phpError' => $this->phpError,
+            'exception' => $this->exception,
+            'sections' => $this->sections,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->uniqid = $data['uniqid'] ?? uniqid();
+        $this->datetime = $data['datetime'] ?? new DateTime();
+        $this->systemInfo = $data['systemInfo'] ?? [];
+        $this->phpInfo = $data['phpInfo'] ?? [];
+        $this->performancesInfo = $data['performancesInfo'] ?? [];
+        $this->projectInfo = $data['projectInfo'] ?? [];
+        $this->config = $data['config'] ?? [];
+        $this->timeLine = $data['timeLine'] ?? new TimeLine();
+        $this->phpError = $data['phpError'] ?? new PhpError();
+        $this->exception = $data['exception'] ?? null;
+        $this->sections = $data['sections'] ?? [];
+    }
+
     /**
      * @inheritdoc
      */
     public function serialize()
     {
-        return serialize(
-            [
-                'uniqid' => $this->uniqid,
-                'datetime' => $this->datetime,
-                'systemInfo' => $this->systemInfo,
-                'phpInfo' => $this->phpInfo,
-                'performancesInfo' => $this->performancesInfo,
-                'projectInfo' => $this->projectInfo,
-                'config' => $this->config,
-                'timeLine' => $this->timeLine,
-                'phpError' => $this->phpError,
-                'exception' => $this->exception,
-                'sections' => $this->sections,
-            ]
-        );
+        return serialize($this->__serialize());
     }
 
     /**
      * @inheritdoc
-     * @throws Exception
      */
-    public function unserialize($serialized)
+    public function unserialize($serialized): void
     {
         $unserialized = unserialize($serialized);
-
-        $this->uniqid = $unserialized['uniqid'] ?? uniqid();
-        $this->datetime = $unserialized['datetime'] ?? new DateTime();
-        $this->systemInfo = $unserialized['systemInfo'] ?? [];
-        $this->phpInfo = $unserialized['phpInfo'] ?? [];
-        $this->performancesInfo = $unserialized['performancesInfo'] ?? [];
-        $this->projectInfo = $unserialized['projectInfo'] ?? [];
-        $this->config = $unserialized['config'] ?? [];
-        $this->timeLine = $unserialized['timeLine'] ?? new TimeLine();
-        $this->phpError = $unserialized['phpError'] ?? new PhpError();
-        $this->exception = $unserialized['exception'] ?? null;
-        $this->sections = $unserialized['sections'] ?? [];
+        $this->__unserialize($unserialized);
     }
 
     /**

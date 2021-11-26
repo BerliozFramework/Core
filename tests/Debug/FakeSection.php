@@ -28,15 +28,32 @@ class FakeSection extends AbstractSection
         return 'Fake section';
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(['foo' => $this->foo]);
+        return [
+            'foo' => $this->foo,
+        ];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
+    {
+        $this->foo = $data['foo'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize()
+    {
+        return serialize($this->__serialize());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized): void
     {
         $unserialized = unserialize($serialized);
-
-        $this->foo = $unserialized['foo'];
+        $this->__unserialize($unserialized);
     }
 }
