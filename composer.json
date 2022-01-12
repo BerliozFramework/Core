@@ -36,7 +36,7 @@
     "berlioz/config": "^2.0",
     "berlioz/event-manager": "^1.0",
     "berlioz/helpers": "^1.2",
-    "berlioz/service-container": "^2.0",
+    "berlioz/service-container": "^2.1",
     "league/flysystem": "^2.1",
     "psr/simple-cache": "^1.0.0"
   },
