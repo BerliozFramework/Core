@@ -107,6 +107,7 @@ class AppServiceProvider extends AbstractServiceProvider
                             );
                         }
                     }
+                    $service->addProvide(...(array)($serviceConfig['provides'] ?? []));
                     $container->addService($service);
                 } catch (Throwable $exception) {
                     throw new BConfigException(sprintf('Error into "%s" service configuration', $alias), 0, $exception);
