@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file. This projec
 to [Semantic Versioning] (http://semver.org/). For change log format,
 use [Keep a Changelog] (http://keepachangelog.com/).
 
+## [2.1.0] - 2022-01-13
+
+### Changed
+
+- Assets are now loaded on demand and not systematically
+- Bump package `berlioz/service-container` to 2.1
+
+### Fixed
+
+- Bad path to get environment from config
+- Application services provides class list
+- List of provides class not added to service container
+
 ## [2.0.1] - 2021-09-23
 
 ### Fixed
