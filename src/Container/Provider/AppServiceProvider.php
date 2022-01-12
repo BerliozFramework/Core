@@ -55,7 +55,7 @@ class AppServiceProvider extends AbstractServiceProvider
 
                 $this->provides[] = $alias;
                 $this->provides[] = $serviceConfig['class'];
-                array_push($this->provides, (array)($serviceConfig['provides'] ?? []));
+                array_push($this->provides, ...(array)($serviceConfig['provides'] ?? []));
             }
         } catch (ConfigException $exception) {
             throw new BerliozException('Service container configuration error', 0, $exception);
