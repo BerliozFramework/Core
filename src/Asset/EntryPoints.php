@@ -53,25 +53,23 @@ class EntryPoints extends JsonAsset
     /**
      * Get asset for given entry name and file type.
      *
-     * @param string $entry
+     * @param string|string[] $entry
      * @param string|null $type
      *
      * @return array
      * @throws AssetException
      */
-    public function get(string $entry, ?string $type = null): array
+    public function get(string|array $entry, ?string $type = null): array
     {
         $this->loadOnce();
 
-        if (!isset($this->assets[$entry])) {
-            return [];
-        }
+        $assets = [];
 
-        if (null === $type) {
-            $assets = $this->assets[$entry];
+        foreach ((array)$entry as $entryName) {
+            $tmp = $this->assets[$entryName] ?? [];
 
             array_walk(
-                $assets,
+                $tmp,
                 function (&$value) {
                     if (!is_array($value)) {
                         $value = [$value];
@@ -79,19 +77,16 @@ class EntryPoints extends JsonAsset
                 }
             );
 
+            $assets = array_merge_recursive($assets, $tmp);
+        }
+
+        array_walk($assets, fn(&$value) => $value = array_unique($value));
+
+
+        if (null === $type) {
             return $assets;
         }
 
-        if (!isset($this->assets[$entry][$type])) {
-            return [];
-        }
-
-        $assets = $this->assets[$entry][$type];
-
-        if (!is_array($assets)) {
-            $assets = [$assets];
-        }
-
-        return $assets;
+        return $assets[$type] ?? [];
     }
 }

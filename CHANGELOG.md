@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. This projec
 to [Semantic Versioning] (http://semver.org/). For change log format,
 use [Keep a Changelog] (http://keepachangelog.com/).
 
+## [2.2.0] - In progress
+
+### Changed
+
+- `EntryPoints::get()` accept an array of entry name
+
 ## [2.1.0] - 2022-01-13
 
 ### Changed

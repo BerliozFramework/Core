@@ -66,6 +66,34 @@ class EntryPointsTest extends TestCase
         $this->assertEquals([], $entryPoints->get('test', 'bar'));
     }
 
+    public function testGet_multipleEntry()
+    {
+        $entryPoints = new EntryPoints(__DIR__ . '/files/entrypoints.json');
+
+        $this->assertEquals(
+            [
+                '/assets/css/test.12345678.css',
+                '/assets/css/test2.12345678.css'
+            ],
+            $entryPoints->get(['test', 'test2'], 'css')
+        );
+        $this->assertEquals(
+            [
+                'js' => [
+                    '/assets/js/test.12345678.js',
+                    '/assets/js/test2.12345678.js',
+                    '/assets/js/vendor.12345678.js'
+                ],
+                'css' => [
+                    '/assets/css/test.12345678.css',
+                    '/assets/css/test2.12345678.css'
+                ]
+            ],
+            $entryPoints->get(['test', 'test2'])
+        );
+        $this->assertEquals([], $entryPoints->get(['foo', 'bar'], 'js'));
+    }
+
     public function testGetOnBadFilename()
     {
         $entryPoints = new EntryPoints('fake.json');
