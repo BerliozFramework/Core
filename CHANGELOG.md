@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 to [Semantic Versioning] (http://semver.org/). For change log format,
 use [Keep a Changelog] (http://keepachangelog.com/).
 
-## [2.2.0] - In progress
+## [2.2.0] - 2022-01-25
+
+### Added
+
+- Compatibility with library `league/flysystem` ^3.0
 
 ### Changed
 

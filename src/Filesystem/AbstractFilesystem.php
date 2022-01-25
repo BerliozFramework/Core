@@ -17,6 +17,7 @@ namespace Berlioz\Core\Filesystem;
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToResolveFilesystemMount;
+use RuntimeException;
 
 /**
  * Class AbstractFilesystem.
@@ -53,6 +54,34 @@ abstract class AbstractFilesystem implements FilesystemInterface
         list('path' => $path, 'filesystem' => $filesystem) = $this->determineFilesystemAndPath($location);
 
         return $filesystem->fileExists($path);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function directoryExists(string $location): bool
+    {
+        list('path' => $path, 'filesystem' => $filesystem) = $this->determineFilesystemAndPath($location);
+
+        if (false === method_exists($filesystem, 'directoryExists')) {
+            throw new RuntimeException('Need library league/flysystem ^3.0');
+        }
+
+        return $filesystem->directoryExists($path);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function has(string $location): bool
+    {
+        list('path' => $path, 'filesystem' => $filesystem) = $this->determineFilesystemAndPath($location);
+
+        if (false === method_exists($filesystem, 'has')) {
+            throw new RuntimeException('Need library league/flysystem ^3.0');
+        }
+
+        return $filesystem->has($path);
     }
 
     /**
