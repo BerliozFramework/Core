@@ -64,38 +64,40 @@ class ComposerBuilder
 
         $packages = [];
 
-        foreach ($composerLock['packages'] ?? [] as $packageFromLock) {
-            $packageComposerFile =
-                $packageFromLock['name'] . '/' .
-                trim($packageFromLock['target-dir'] ?? '', '\\/') .
-                '/composer.json';
+        foreach (['packages', 'packages-dev'] as $composerKey) {
+            foreach ($composerLock[$composerKey] ?? [] as $packageFromLock) {
+                $packageComposerFile =
+                    $packageFromLock['name'] . '/' .
+                    trim($packageFromLock['target-dir'] ?? '', '\\/') .
+                    '/composer.json';
 
-            if (false === $this->fs->fileExists($packageComposerFile = 'vendor://' . $packageComposerFile)) {
+                if (false === $this->fs->fileExists($packageComposerFile = 'vendor://' . $packageComposerFile)) {
+                    $packages[] = new Package(
+                        name: $packageFromLock['name'],
+                        version: $packageFromLock['version'],
+                        type: $packageFromLock['type'] ?? 'library',
+                        description: $packageFromLock['description'] ?? null,
+                    );
+                    continue;
+                }
+
+                $packageComposer = json_decode($this->fs->read($packageComposerFile), true);
+
                 $packages[] = new Package(
-                    name: $packageFromLock['name'],
-                    version: $packageFromLock['version'],
-                    type: $packageFromLock['type'] ?? 'library',
-                    description: $packageFromLock['description'] ?? null,
+                    name: $packageComposer['name'] ?? $packageFromLock['name'],
+                    version: $packageComposer['version'] ?? $packageFromLock['version'] ?? null,
+                    type: $packageComposer['type'] ?? $packageFromLock['type'] ?? 'library',
+                    description: $packageComposer['description'] ?? $packageFromLock['description'] ?? null,
+                    config: $packageComposer['config'] ?? $packageFromLock['config'] ?? [],
                 );
-                continue;
             }
 
-            $packageComposer = json_decode($this->fs->read($packageComposerFile), true);
-
-            $packages[] = new Package(
-                name: $packageComposer['name'] ?? $packageFromLock['name'],
-                version: $packageComposer['version'] ?? $packageFromLock['version'] ?? null,
-                type: $packageComposer['type'] ?? $packageFromLock['type'] ?? 'library',
-                description: $packageComposer['description'] ?? $packageFromLock['description'] ?? null,
-                config: $packageComposer['config'] ?? $packageFromLock['config'] ?? [],
+            $this->composer = new Composer(
+                name: $composerJson['name'],
+                version: $composerJson['version'] ?? null,
+                packages: $packages,
             );
         }
-
-        $this->composer = new Composer(
-            name: $composerJson['name'],
-            version: $composerJson['version'] ?? null,
-            packages: $packages,
-        );
     }
 
     /**
