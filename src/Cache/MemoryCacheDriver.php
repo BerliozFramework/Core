@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core\Cache;
 
 use Berlioz\Core\Exception\CacheException;
+use DateInterval;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -27,7 +28,7 @@ class MemoryCacheDriver extends AbstractCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function has($key): bool
+    public function has(string $key): bool
     {
         $this->controlKey($key);
 
@@ -41,7 +42,7 @@ class MemoryCacheDriver extends AbstractCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $this->controlKey($key);
 
@@ -56,7 +57,7 @@ class MemoryCacheDriver extends AbstractCacheDriver implements CacheInterface
      * @inheritDoc
      * @throws CacheException
      */
-    public function set($key, $value, $ttl = null): bool
+    public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $this->controlKey($key);
 
@@ -71,7 +72,7 @@ class MemoryCacheDriver extends AbstractCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function delete($key): bool
+    public function delete(string $key): bool
     {
         $this->controlKey($key);
 

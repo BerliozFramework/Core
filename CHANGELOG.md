@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. This projec
 to [Semantic Versioning] (http://semver.org/). For change log format,
 use [Keep a Changelog] (http://keepachangelog.com/).
 
+## [2.4.0] - 2024-10-18
+
+### Added
+
+- Compatibility with `psr/simple-cache` ^2.0 and ^3.0
+
 ## [2.3.0] - 2023-09-04
 
 ### Changed

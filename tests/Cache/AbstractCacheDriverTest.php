@@ -28,8 +28,6 @@ abstract class AbstractCacheDriverTest extends TestCase
         return [
             ['key', 'value', true],
             ['key-key', new stdClass(), true],
-            [['array'], 'value', false],
-            [new stdClass(), 'value', false],
             ['', 'value', false]
         ];
     }
@@ -141,13 +139,6 @@ abstract class AbstractCacheDriverTest extends TestCase
         $this->assertTrue($this->getCacheDriver()->setMultiple($dataSet, $ttl));
     }
 
-    public function testSetMultiple_withNonIterable()
-    {
-        $this->expectException(InvalidArgumentCacheException::class);
-
-        $this->getCacheDriver()->setMultiple('foo');
-    }
-
     /**
      * @dataProvider providerMultiple
      */
@@ -166,13 +157,6 @@ abstract class AbstractCacheDriverTest extends TestCase
         $this->assertEquals($result, $values);
     }
 
-    public function testGetMultiple_withNonIterable()
-    {
-        $this->expectException(InvalidArgumentCacheException::class);
-
-        $this->getCacheDriver()->getMultiple('foo');
-    }
-
     /**
      * @dataProvider providerMultiple
      */
@@ -188,12 +172,5 @@ abstract class AbstractCacheDriverTest extends TestCase
         $this->assertTrue($this->getCacheDriver()->deleteMultiple($keys));
         $values = $this->getCacheDriver()->getMultiple($keys);
         $this->assertEquals([], array_filter($values));
-    }
-
-    public function testDeleteMultiple_withNonIterable()
-    {
-        $this->expectException(InvalidArgumentCacheException::class);
-
-        $this->getCacheDriver()->deleteMultiple('foo');
     }
 }

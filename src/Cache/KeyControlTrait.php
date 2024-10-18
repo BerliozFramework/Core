@@ -28,7 +28,7 @@ trait KeyControlTrait
      *
      * @throws InvalidArgumentCacheException
      */
-    protected function controlKey($key)
+    protected function controlKey($key): void
     {
         if (!is_string($key)) {
             throw new InvalidArgumentCacheException('Invalid key name for cache, must be string');

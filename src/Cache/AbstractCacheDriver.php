@@ -34,7 +34,7 @@ abstract class AbstractCacheDriver implements CacheInterface
      * @inheritDoc
      * @throws CacheException
      */
-    public function getMultiple($keys, $default = null): array
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         if (!is_iterable($keys)) {
             throw new InvalidArgumentCacheException('First argument must be iterable');
@@ -53,7 +53,7 @@ abstract class AbstractCacheDriver implements CacheInterface
      * @inheritDoc
      * @throws CacheException
      */
-    public function setMultiple($values, $ttl = null): bool
+    public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {
         if (!is_iterable($values)) {
             throw new InvalidArgumentCacheException('First argument must be iterable');
@@ -75,7 +75,7 @@ abstract class AbstractCacheDriver implements CacheInterface
      * @inheritDoc
      * @throws CacheException
      */
-    public function deleteMultiple($keys): bool
+    public function deleteMultiple(iterable $keys): bool
     {
         if (!is_iterable($keys)) {
             throw new InvalidArgumentCacheException('First argument must be iterable');

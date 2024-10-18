@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core\Cache;
 
 use Berlioz\Core\Directories\DirectoriesInterface;
+use DateInterval;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -62,7 +63,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function get($key, $default = null): mixed
+    public function get(string $key, mixed $default = null): mixed
     {
         return $this->cache->get($key, $default);
     }
@@ -70,7 +71,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function set($key, $value, $ttl = null): bool
+    public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         return $this->cache->set($key, $value, $ttl);
     }
@@ -78,7 +79,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function delete($key): bool
+    public function delete(string $key): bool
     {
         return $this->cache->delete($key);
     }
@@ -94,7 +95,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function getMultiple($keys, $default = null): iterable
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         return $this->cache->getMultiple($keys, $default);
     }
@@ -102,7 +103,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function setMultiple($values, $ttl = null): bool
+    public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {
         return $this->cache->setMultiple($values, $ttl);
     }
@@ -110,7 +111,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function deleteMultiple($keys): bool
+    public function deleteMultiple(iterable $keys): bool
     {
         return $this->cache->deleteMultiple($keys);
     }
@@ -118,7 +119,7 @@ class CacheManager implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function has($key)
+    public function has(string $key): bool
     {
         return $this->cache->has($key);
     }

@@ -53,14 +53,6 @@ class NullCacheDriverTest extends TestCase
         $this->assertEquals(['bar' => 'qux', 'foo' => 'qux'], $nullDriver->getMultiple(['bar', 'foo'], 'qux'));
     }
 
-    public function testGetMultiple_withNonIterable()
-    {
-        $this->expectException(InvalidArgumentCacheException::class);
-
-        $nullDriver = new NullCacheDriver();
-        $nullDriver->getMultiple('foo');
-    }
-
     public function testSetMultiple()
     {
         $nullDriver = new NullCacheDriver();
@@ -68,27 +60,11 @@ class NullCacheDriverTest extends TestCase
         $this->assertTrue($nullDriver->setMultiple(['bar' => 'qux', 'foo' => 'qux']));
     }
 
-    public function testSetMultiple_withNonIterable()
-    {
-        $this->expectException(InvalidArgumentCacheException::class);
-
-        $nullDriver = new NullCacheDriver();
-        $nullDriver->setMultiple('foo');
-    }
-
     public function testDeleteMultiple()
     {
         $nullDriver = new NullCacheDriver();
 
         $this->assertTrue($nullDriver->deleteMultiple(['bar', 'foo']));
-    }
-
-    public function testDeleteMultiple_withNonIterable()
-    {
-        $this->expectException(InvalidArgumentCacheException::class);
-
-        $nullDriver = new NullCacheDriver();
-        $nullDriver->deleteMultiple('foo');
     }
 
     public function testClear()

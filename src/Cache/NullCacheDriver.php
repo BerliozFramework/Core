@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Berlioz\Core\Cache;
 
 use Berlioz\Core\Exception\InvalidArgumentCacheException;
+use DateInterval;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -27,7 +28,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $this->controlKey($key);
 
@@ -37,7 +38,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function set($key, $value, $ttl = null)
+    public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $this->controlKey($key);
 
@@ -47,7 +48,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function delete($key)
+    public function delete(string $key): bool
     {
         $this->controlKey($key);
 
@@ -57,7 +58,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function clear()
+    public function clear(): bool
     {
         return true;
     }
@@ -65,7 +66,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function getMultiple($keys, $default = null)
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         if (!is_iterable($keys)) {
             throw new InvalidArgumentCacheException('First argument must be iterable');
@@ -79,7 +80,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {
         if (!is_iterable($values)) {
             throw new InvalidArgumentCacheException('First argument must be iterable');
@@ -93,7 +94,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function deleteMultiple($keys)
+    public function deleteMultiple(iterable $keys): bool
     {
         if (!is_iterable($keys)) {
             throw new InvalidArgumentCacheException('First argument must be iterable');
@@ -107,7 +108,7 @@ class NullCacheDriver implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function has($key)
+    public function has(string $key): bool
     {
         $this->controlKey($key);
 
