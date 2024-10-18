@@ -30,7 +30,7 @@ class ServiceProviderTest extends ProviderTestCase
     /**
      * @inheritDoc
      */
-    public function providers(): array
+    public static function providers(): array
     {
         return [
             [new AppServiceProvider($this->getCore())],
