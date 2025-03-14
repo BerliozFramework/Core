@@ -25,7 +25,7 @@ class EventDispatcher extends BerliozEventDispatcher
 {
     public function __construct(
         protected DebugHandler $debugHandler,
-        ListenerProviderInterface $defaultProvider = null,
+        ?ListenerProviderInterface $defaultProvider = null,
     ) {
         parent::__construct([], [], $defaultProvider);
     }

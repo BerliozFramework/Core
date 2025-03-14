@@ -140,7 +140,7 @@ class TimelineActivity
      *
      * @return static
      */
-    public function setResult($result = null): static
+    public function setResult(mixed $result = null): static
     {
         $this->result = $result;
 

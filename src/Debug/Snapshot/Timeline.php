@@ -68,7 +68,7 @@ class Timeline implements Countable
      *
      * @return TimelineActivity[]
      */
-    public function getActivities(string $group = null): array
+    public function getActivities(?string $group = null): array
     {
         if (null === $group) {
             return $this->activities;
@@ -103,7 +103,7 @@ class Timeline implements Countable
      *
      * @return float|null
      */
-    public function getFirstTime(string $group = null): ?float
+    public function getFirstTime(?string $group = null): ?float
     {
         $activities = $this->getActivities($group);
         $activities = array_map(
@@ -128,7 +128,7 @@ class Timeline implements Countable
      *
      * @return float|null
      */
-    public function getLastTime(string $group = null): ?float
+    public function getLastTime(?string $group = null): ?float
     {
         $activities = $this->getActivities($group);
         $activities = array_map(
@@ -153,7 +153,7 @@ class Timeline implements Countable
      *
      * @return float|null
      */
-    public function getDuration(string $group = null): ?float
+    public function getDuration(?string $group = null): ?float
     {
         $firstTime = $this->getFirstTime($group);
         $lastTime = $this->getLastTime($group);
@@ -172,7 +172,7 @@ class Timeline implements Countable
      *
      * @return array[]
      */
-    public function getMemoryUsages(string $group = null): array
+    public function getMemoryUsages(?string $group = null): array
     {
         $memoryUsages = [];
         $firstTime = $this->getFirstTime($group);
@@ -231,7 +231,7 @@ class Timeline implements Countable
      *
      * @return int|null
      */
-    public function getMemoryPeakUsage(string $group = null): ?int
+    public function getMemoryPeakUsage(?string $group = null): ?int
     {
         $activities = $this->getActivities($group);
         $memory = array_map(fn(TimelineActivity $activity) => $activity->getEndMemoryPeakUsage(), $activities);
